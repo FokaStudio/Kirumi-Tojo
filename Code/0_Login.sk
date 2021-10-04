@@ -24,6 +24,9 @@ init:
 	Bukkit.getServer().unloadWorld("world", false)
 	make new discord bot:
 		enable all default intent
+
+		# This is my test bot, even if you get the token, it will be regened after I am done with
+		# redoing the whole bot (and after I move to the right one)
 		login to "NzQyMTA1NDQ0ODYzOTY3Mzk0.XzBRjQ.0qq2ODe9UZ9a8bdrSgiFbk-h8No" with name "Kirumi"
 	set online status of bot named "Kirumi" to do not disturb
 	set presence of bot "Kirumi" to playing "Project: SMP | play.projectsmp.tk"
