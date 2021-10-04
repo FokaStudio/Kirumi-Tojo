@@ -1,0 +1,6 @@
+discord command setup <string> <string>:
+    category: Utility
+    permission: manage server
+    description: Configure my various functions to your likings
+    trigger:
+        

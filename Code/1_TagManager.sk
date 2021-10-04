@@ -1,0 +1,106 @@
+# Copyright 2021  FokaStudio
+
+discord command tagcreator [<text>] [<text>] [<text>]:
+	aliases: tcreator, tc, tagmanager, tm, tmanager, tagc, tagm
+	permissions: administrator
+	description: Basic command for registering new quick responses
+	category: tags
+	usage: %{db_SI.%discord id of event-guild%::prefix}%tagcreator <help|create|edit|image|thumbnail|extra> <id> <message|url>
+	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	trigger:
+		switch arg-1:
+			case "help":
+				reply to event-message with "**TAG MANAGER**%nl%*Version 1.1, by FokaStudio, for FokaStudio <3*%nl%%nl%**USAGE**``!(t[ag]c[reator]|t[ag]m[anager]) (create|edit|delete|remove|image|extra|thumbnail) %%tag's id%% [%%text, depends on arg-2%%]``%nl%%nl%***INFO***```create - registers the Tag with specified ID, 3rd argument should be used as 'title|description'%nl%%nl%remove or delete - self-explanatory%nl%%nl%edit - re-registers a tag, usage just like with 'create' ('title|description')%nl%%nl%image or thumbnail - adds an image or thumbnail to the embed of the specified tag, this is optional and 3rd argument has to be URL pointing to the image%nl%%nl%extra - removes the embed and replies with just plain text, useful for making tags that return only videos or a short string of words```"
+			case not "create", "delete", "image", "thumbnail", "extra", "remove" or "edit":
+				reply to event-message with ":x: **Wrong argument! You can only use ""create"", ""delete"", ""image"", ""thumbnail"", ""extra"" or ""edit""!**"
+			case "create":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} contains arg-2:
+					reply to event-message with ":x: **Tag with that ID already exists! (%arg-2%)**"
+					stop
+				set {_util::*} to arg-3 split at "|"
+				set {tag::%discord id of event-guild%::%arg-2%::title} to {_util::1}
+				set {tag::%discord id of event-guild%::%arg-2%::text} to {_util::2}
+				add arg-2 to {tags::%discord id of event-guild%::*} 
+				reply to event-message with "**Succesfully created tag ""%arg-2%""!**"
+			case "delete" or "remove":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} doesn't contain arg-2:
+					reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-2%)**"
+					stop
+				delete {tag::%discord id of event-guild%::%arg-2%::*}
+				remove arg-2 from {tags::%discord id of event-guild%::*}
+				reply to event-message with "**Succesfully removed tag ""%arg-2%""!**"
+			case "edit":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} doesn't contain arg-2:
+					reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-2%)**"
+					stop
+				set {_util::*} to arg-3 split at "|"
+				set {tag::%discord id of event-guild%::%arg-2%::title} to {_util::1}
+				set {tag::%discord id of event-guild%::%arg-2%::text} to {_util::2}
+				reply to event-message with "**Succesfully edited tag ""%arg-2%""!**"
+			case "image":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} doesn't contain arg-2:
+					reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-2%)**"
+					stop
+				set {tag::%discord id of event-guild%::%arg-2%::image} to arg-3
+				reply to event-message with "**Succesfully added image to tag ""%arg-2%""!**"
+			case "thumbnail":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} doesn't contain arg-2:
+					reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-2%)**"
+					stop
+				set {tag::%discord id of event-guild%::%arg-2%::thumbnail} to arg-3
+				reply to event-message with "**Succesfully added thumbnail to tag ""%arg-2%""!**"
+			case "extra":
+				if arg-2 is not set:
+					reply with ":x: **Specify argument 2!**"
+					stop
+				if {tags::%discord id of event-guild%::*} doesn't contain arg-2:
+					reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-2%)**"
+					stop
+				set {tag::%discord id of event-guild%::%arg-2%::extra} to arg-3
+				reply to event-message with "**Succesfully added extra to tag ""%arg-2%""!**"
+
+discord command tag <text>:
+	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	aliases: t
+	usage: %{db_SI.%discord id of event-guild%::prefix}%tag <id>
+	category: tags
+	description: Asking me questions so I can use my quick responses
+	trigger:
+		if {tags::%discord id of event-guild%::*} doesn't contain arg-1:
+			reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-1%)**"
+		if {tag::%discord id of event-guild%::%arg-1%::extra} is set:
+			reply to event-message with "%{tag::%discord id of event-guild%::%arg-1%::extra}%"
+		make embed:
+			set title of embed to "%{tag::%discord id of event-guild%::%arg-1%::title}%"
+			set description of embed to "%{tag::%discord id of event-guild%::%arg-1%::text}%"
+			set image of embed to "%{tag::%discord id of event-guild%::%arg-1%::image}%" if {tag::%discord id of event-guild%::%arg-1%::image} is set
+			set thumbnail of embed to "%{tag::%discord id of event-guild%::%arg-1%::thumbnail}%" if {tag::%discord id of event-guild%::%arg-1%::thumbnail} is set
+			set colour of the embed to orange
+			set footer of embed to "Requested by %event-user%##%tag of event-user%"
+			set footer icon of embed to avatar of event-user
+			set timestamp of embed to now
+		reply to event-message with last embed
+
+#discord command taglist
+#	prefixes: %{prefix::%discord id of event-guild%}%
+#	aliases: tl
+#	usage: !taglist
+#	category: tags
+#	descritpion: List all quick responses of mine
+#	trigger:
+#		loop

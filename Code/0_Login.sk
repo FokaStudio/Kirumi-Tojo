@@ -1,0 +1,118 @@
+# Copyright 2021  FokaStudio
+
+# Coded by: FokaStudio
+# Original by: <none>
+# Addons required: DiSky
+# Other plugins: <none>
+
+
+import:
+	org.bukkit.Bukkit
+
+function AND(conditions: booleans) :: boolean:
+	if {_conditions::*} contains false:
+		return false
+	return true
+	
+function OR(conditions: booleans) :: boolean:
+	if {_conditions::*} contains true:
+		return true
+	return false
+
+# Login and startup message
+init:
+	Bukkit.getServer().unloadWorld("world", false)
+	make new discord bot:
+		enable all default intent
+		login to "NzQyMTA1NDQ0ODYzOTY3Mzk0.XzBRjQ.0qq2ODe9UZ9a8bdrSgiFbk-h8No" with name "Kirumi"
+	set online status of bot named "Kirumi" to do not disturb
+	set presence of bot "Kirumi" to playing "Project: SMP | play.projectsmp.tk"
+
+# Utility, returns a color for the embed based on input
+function kirumiColor(s: string) :: color:
+	if {_s} = "error":
+		return dark red
+	else if {_s} = "warn":
+		return yellow
+	else if {_s} = "info":
+		return light blue
+	else if {_s} = "moderation":
+		return light red
+	else if {_s} = "other":
+		return lime
+
+# Effect to log smth to #audit-logs
+effect [Kirumi] log %string% as %string% in guild %guild%:
+	trigger:
+		if {audit.channel::%discord id of expr-3%} is set:
+			make embed:
+				set author of the embed to "Project: SMP | %expr-2 in proper case%"
+				set author icon of the embed to avatar of user with id "722065810033475616"
+				set title of the embed to "%expr-2%"
+				set description of the embed to "%expr-1%"
+				set timestamp of the embed to now
+				set footer of the embed to "Kirumi Tojo"
+				set color of the embed to kirumiColor(expr-2)
+			send last embed to channel with id {audit.channel::%discord id of expr-3%}
+
+effect do nothing:
+	trigger:
+		stop
+	
+# Force smth to log into the audit log channel
+discord command log <text> <text>:
+	permissions: manage server
+	prefixes: !
+	usage: !log <error|warn|info|moderation|other> <message>
+	category: moderation
+	description: <STAFF> Log a message into your guild's log channel (if it exists)
+	trigger:
+		Kirumi log arg-2 as arg-1 in guild event-guild
+
+# Basically making Kirumi say a desired line of yours
+discord command announce <text>:
+	permissions: manage server
+	prefixes: !
+	usage: !announce <message>
+	category: moderation
+	description: <STAFF> Make me help you with making announcements (accepts formatting codes that are accesible only to bots, such as [link](URL))
+	trigger:
+		delete discord entity event-message
+		reply with arg-1
+
+discord command prefix <text>:
+	permissions: manage server
+	prefixes: !, %{db_SI.%discord id of event-guild%::prefix}%
+	description: <STAFF> Set my prefix for commands
+	category: Utility
+	usage: !prefix <new prefix>
+	trigger:
+		if arg-1 = {db_SI.%discord id of event-guild%::prefix}:
+			reply with ":x: **My new prefix can't be my old prefix!**"
+		else:
+			set {db_SI.%discord id of event-guild%::prefix} to arg-1
+			reply with ":white_check_mark: **Succesfully changed my prefix!**"
+
+on bot join:
+	if "%event-bot%" = "Kirumi":
+		add 1 to {guild_count}
+		set {_channels::*} to text channels of event-guild 
+		send "Test" to (random element out of {_channels::*})
+		set {db_SI.%discord id of event-guild%::prefix} to "!"
+		set {db_SI.%discord id of event-guild%::expconfig::required::1} to 200
+		set {db_SI.%discord id of event-guild%::expconfig::multiplier} to 1.5
+		set {db_SI.%discord id of event-guild%::expconfig::chance} to 50
+		set {db_SI.%discord id of event-guild%::expconfig::min} to 5
+		set {db_SI.%discord id of event-guild%::expconfig::max} to 25
+
+on bot leave:
+	if "%event-bot%" = "Kirumi":
+		remove 1 from {guild_count}
+		clear {db_SI.%discord id of event-guild%::*}
+		clear {tags::%discord id of event-guild%::*}
+		clear {tag::%discord id of event-guild%::*}
+
+discord command test:
+	prefixes: !
+	trigger:
+		reply with "%{guild_count}% %{db_SI.%discord id of event-guild%::prefix}%"
