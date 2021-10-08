@@ -11,10 +11,10 @@ options:
 
 # > Main command
 discord command calculator:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: calc
 	category: general
-	usage: %{db_SI.%discord id of event-guild%::prefix}%calculator
+	usage: %{db_SI.prefix::%discord id of event-guild%}%calculator
 	description: A simple calculator
 	trigger:
 		make embed:

@@ -7,11 +7,11 @@
 
 
 discord command avatar [<member=%event-member%>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: av, a
 	executable in: guild
 	bots: Butler
-	usage: %{db_SI.%discord id of event-guild%::prefix}%avatar [<member>]
+	usage: %{db_SI.prefix::%discord id of event-guild%}%avatar [<member>]
 	category: general
 	description: Grab the Avatar of any member of this guild
 	trigger:
@@ -28,24 +28,21 @@ discord command avatar [<member=%event-member%>]:
 		reply to event-message with last embed
 
 discord command clyde [<text>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
 	bots: Butler
 	category: general
 	description: Make my good friend Clyde say something
 	trigger:
-		if arg-1 is not set:
-			reply to event-message with ":x: **Maybe you should include smth in 1st argument?**"
-			stop
-		set {_arg1} to arg-1
+		set {_arg1} to (arg-1 ? "Include something in the first argument!")
 		replace all " " with "%%20" in {_arg1}
 		reply to event-message with "https://ctk-api.herokuapp.com/clyde/%{_arg1}%"
 
 discord command whois [<member>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: userinfo
 	category: general
-	description: Grab info of one of the members of our server%{db_SI.%discord id of event-guild%::prefix}%
+	description: Grab info of one of the members of this server
 	trigger:
 		if arg 1 is not set:
 			reply to event-message with ":x: You **must** specify a member!"
@@ -65,16 +62,16 @@ discord command whois [<member>]:
 		reply to event-message with last embed
 
 discord command server [<text>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
 	bots: Butler
 	category: minecraft
-	usage: %{db_SI.%discord id of event-guild%::prefix}%server <minecraft server>
+	usage: %{db_SI.prefix::%discord id of event-guild%}%server <minecraft server>
 	aliases: mcserv, mcserver, serv, serverinfo
 	description: Grab all info about any server in a form of a neat embed
 	trigger:
 		if arg-1 is not set:
-			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%{db_SI.%discord id of event-guild%::prefix}%mcserv mc.hypixel.net```"
+			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%{db_SI.prefix::%discord id of event-guild%}%mcserv mc.hypixel.net```"
 		send http request to "https://api.mcsrvstat.us/2/%arg-1%"
 		set {_server} to last http response
 		set {_server} to {_server}'s body
@@ -86,7 +83,7 @@ discord command server [<text>]:
 			make embed:
 				set color of the embed to light red
 				set title of embed to "All info about %arg-1%"
-				set description of the embed to "Not sure what Protocol is? Click on the title%{db_SI.%discord id of event-guild%::prefix}%"
+				set description of the embed to "Not sure what Protocol is? Click on the title%{db_SI.prefix::%discord id of event-guild%}%"
 				add inline field named ":green_circle: Server Status" with value "Online" to fields of embed
 				add inline field named ":pushpin: Online" with value "%{_server::players::online}% / %{_server::players::max}%" to fields of embed
 				add inline field named ":compass: Version" with value "%{_server::version}%" to fields of embed
@@ -109,11 +106,11 @@ discord command server [<text>]:
 			reply to event-message with last embed
 
 discord command search [<text>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
 	bots: Butler
 	category: general
-	usage: %{db_SI.%discord id of event-guild%::prefix}%search <query>
+	usage: %{db_SI.prefix::%discord id of event-guild%}%search <query>
 	description: Search the web for anything you want 
 	trigger:
 		if arg-1 is not set:
@@ -125,10 +122,10 @@ discord command search [<text>]:
 		reply with "https://image.thum.io/get/auth/40904-Butler/nomention/https://google.com/search?q=%{_arg}%"
 
 discord command player [<text>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
 	aliases: mcplayer, playerinfo
-	usage: %{db_SI.%discord id of event-guild%::prefix}%player <player>
+	usage: %{db_SI.prefix::%discord id of event-guild%}%player <player>
 	category: minecraft
 	bots: Butler
 	description: Grab any info about a specified player

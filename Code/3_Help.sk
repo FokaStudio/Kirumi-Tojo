@@ -11,7 +11,7 @@ function helpMessage(c: string, u: user, g: guild) :: embed:
 	if {_c} = "none":
 		make embed:
 			set title of embed to "Help"
-			set description of embed to "**I am Kirumi Tojo, the *Ultimate Maid*. Please let me know if you require my service.**%nl%Do `%{db_SI.%{_g}%::prefix}%help <category>` to learn about other commands"
+			set description of embed to "**I am Kirumi Tojo, the *Ultimate Maid*. Please let me know if you require my service.**%nl%Do `%{db_SI.prefix::%{_g}%}%help <category>` to learn about other commands"
 			set author of the embed to "Project: SMP Server"
 			set colour of the embed to yellow
 			add inline field named "General" with value "General command category" to fields of embed
@@ -29,7 +29,7 @@ function helpMessage(c: string, u: user, g: guild) :: embed:
 		loop all discord commands:
 			if "%loop-value%" = "%{_c::2}%":
 				make embed:
-					add "**%{db_SI.%{_g}%::prefix}%%loop-value%**%nl%%nl%" to {_embed::*}
+					add "**%{db_SI.prefix::%{_g}%}%%loop-value%**%nl%%nl%" to {_embed::*}
 					add "*%loop-value's description%*%nl%%nl%" to {_embed::*}
 					add "*`Category:`* __%loop-value's category%__%nl%" to {_embed::*}
 					add "**`Usage:`** __%loop-value's usage%__%nl%" to {_embed::*}
@@ -53,7 +53,7 @@ function helpMessage(c: string, u: user, g: guild) :: embed:
 		make embed:
 			loop all discord command:
 				if discord command category of loop-value = {_c}:
-					add "**`%{db_SI.%{_g}%::prefix}%%loop-value%`** - *%description of loop-value%*%nl%" to {_embed::*}
+					add "**`%{db_SI.prefix::%{_g}%}%%loop-value%`** - *%description of loop-value%*%nl%" to {_embed::*}
 			if size of {_embed::*} != 0:
 				set color of the embed to lime
 				set description of embed to {_embed::*}
@@ -89,9 +89,9 @@ function helpButtons(m: message):
 discord command help [<string>]:
 	aliases: helpmepls, mayigethelp, heeyadmin
 	category: general
-	usage: %{db_SI.%discord id of event-guild%::prefix}%help [<category|command>]
+	usage: %{db_SI.prefix::%discord id of event-guild%}%help [<category|command>]
 	description: Basic help command. Use it anytime you want
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%, !
 	trigger:
 		if arg-1 is not set:
 			reply to event-message with helpMessage("none", event-user, event-guild) and store it in {_msg}

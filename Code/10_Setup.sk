@@ -1,0 +1,42 @@
+discord command setup-suggestions [<channel>]:
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	description: Manage Suggestion channel
+	category: general
+	permissions: manage server
+	usage: %{db_SI.prefix::%discord id of event-guild%}%suggestion-setup [<channel>] (will create a new one if absent)
+	trigger:
+		if arg-1 is set:
+			set {db_SI.suggestion_channel::%discord id of event-guild%} to discord id of arg-1
+			reply with "**:trophy: %arg-1% is now a Suggestion channel! Every message posted there will be automatically deleted and replaced with a small poll!**"
+		else:
+			if {db_SI.suggestion_channel::%discord id of event-guild%} is set:
+				reply with ":x: **Suggestion channel was already created, you can only assign a new one now!**"
+			else:
+				make new text channel:
+					set discord name of text channel to "suggestions"
+				create text channel builder in event-guild and store it in {_s}
+				allow permission (message write) to public role of event-guild in {_s}
+				set {db_SI.suggestion_channel::%discord id of event-guild%} to discord id of {_s}
+				reply with ":trophy: **Succesfully created a new Suggestion channel!**"
+
+discord command setup-audit [<channel>]:
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	description: Manage Audit Log channel
+	category: general
+	permissions: manage server
+	usage: %{db_SI.prefix::%discord id of event-guild%}%audit-setup [<channel>] (will create a new one if absent)
+	trigger:
+		if arg-1 is set:
+			set {db_SI.audit_channel::%discord id of event-guild%} to discord id of arg-1
+			reply with "**:trophy: %arg-1% is now a Audit Logs channel! It will log some useful info for you there**"
+		else:
+			if {db_SI.audit_channel::%discord id of event-guild%} is set:
+				reply with ":x: **Audit Logs channel was already created, you can only assign a new one now!**"
+			else:
+				make new text channel:
+					set discord name of text channel to "audit-logs"
+				create text channel builder in event-guild and store it in {_a}
+				deny permission (view channel) to public role of event-guild in {_a}
+				set {db_SI.audit_channel::%discord id of event-guild%} to discord id of {_a}
+				reply with ":: **Succesfully created a new Audit Logs channel!**"
+				Kirumi log "If you see this message, it means that you have configured the Audit Logs channel properly!" as "info" in event-guild

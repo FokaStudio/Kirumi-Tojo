@@ -6,7 +6,7 @@
 # Other plugins: <none>
 
 on message receive:
-	if event-channel = channel with id {suggestions::%discord id of event-guild%}:
+	if event-channel = channel with id {db_SI.suggestion_channel::%discord id of event-guild%}:
 		if event-member is a discord bot:
 			react to event-message with reaction "white_check_mark"
 			react to event-message with reaction "x"
@@ -21,9 +21,15 @@ on message receive:
 				set image of embed to attachment url of {_att::1} if {_att::1} is set
 				set color of embed to yellow, orange or light red
 				set timestamp of the embed to now
-			reply with last embed and store it in {_embed}
-			add discord id of {_embed} to {suggestion::%discord id of event-member%::*}
+				set footer of embed to "%discord id of event-member%"
+			reply with last embed
 
 on reaction add:
-	{suggestion::%discord id of event-member%::*} contains discord id of event-message:
+	set {_e::*} to embeds of event-message
+	if footer of {_e::1} contains discord id of event-member:
 		remove event-emote added by event-user from event-message
+
+on text channel delete:
+	if discord id of event-textchannel = {db_SI.suggestion_channel::%discord id of event-guild%}:
+		delete {db_SI.suggestion_channel::%discord id of event-guild%}
+		Kirumi log "Suggestion channel %event-textchannel% (%discord id of event-textchannel%) has been deleted! You need to create a new one if you want to continue on using this system!" as "warning" in event-guild

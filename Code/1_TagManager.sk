@@ -5,8 +5,8 @@ discord command tagcreator [<text>] [<text>] [<text>]:
 	permissions: administrator
 	description: Basic command for registering new quick responses
 	category: tags
-	usage: %{db_SI.%discord id of event-guild%::prefix}%tagcreator <help|create|edit|image|thumbnail|extra> <id> <message|url>
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	usage: %{db_SI.prefix::%discord id of event-guild%}%tagcreator <help|create|edit|image|thumbnail|extra> <id> <message|url>
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	trigger:
 		switch arg-1:
 			case "help":
@@ -75,32 +75,29 @@ discord command tagcreator [<text>] [<text>] [<text>]:
 				reply to event-message with "**Succesfully added extra to tag ""%arg-2%""!**"
 
 discord command tag <text>:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
-	aliases: t
-	usage: %{db_SI.%discord id of event-guild%::prefix}%tag <id>
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	aliases: t, tags
+	usage: %{db_SI.prefix::%discord id of event-guild%}%tag <id>
 	category: tags
-	description: Asking me questions so I can use my quick responses
+	description: Asking me questions so I can use my quick responses (or list all of them)
 	trigger:
-		if {tags::%discord id of event-guild%::*} doesn't contain arg-1:
+		if OR(check [arg-1 = "list"], check [arg-1 is not set]) = true:
+			loop {tags::%discord id of event-guild%::*}:
+				add "%{tag::%discord id of event-guild%::%loop-value%::title}%" to {_t::*}
+			set {_t} to join {_t::*} with ", %nl%"
+			reply with "```%nl%%{_t}%%nl%```"
+		else if {tags::%discord id of event-guild%::*} doesn't contain arg-1:
 			reply to event-message with ":x: **Tag with that ID doesn't exist! (%arg-1%)**"
-		if {tag::%discord id of event-guild%::%arg-1%::extra} is set:
+		else if {tag::%discord id of event-guild%::%arg-1%::extra} is set:
 			reply to event-message with "%{tag::%discord id of event-guild%::%arg-1%::extra}%"
-		make embed:
-			set title of embed to "%{tag::%discord id of event-guild%::%arg-1%::title}%"
-			set description of embed to "%{tag::%discord id of event-guild%::%arg-1%::text}%"
-			set image of embed to "%{tag::%discord id of event-guild%::%arg-1%::image}%" if {tag::%discord id of event-guild%::%arg-1%::image} is set
-			set thumbnail of embed to "%{tag::%discord id of event-guild%::%arg-1%::thumbnail}%" if {tag::%discord id of event-guild%::%arg-1%::thumbnail} is set
-			set colour of the embed to orange
-			set footer of embed to "Requested by %event-user%##%tag of event-user%"
-			set footer icon of embed to avatar of event-user
-			set timestamp of embed to now
-		reply to event-message with last embed
-
-#discord command taglist
-#	prefixes: %{prefix::%discord id of event-guild%}%
-#	aliases: tl
-#	usage: !taglist
-#	category: tags
-#	descritpion: List all quick responses of mine
-#	trigger:
-#		loop
+		else:
+			make embed:
+				set title of embed to "%{tag::%discord id of event-guild%::%arg-1%::title}%"
+				set description of embed to "%{tag::%discord id of event-guild%::%arg-1%::text}%"
+				set image of embed to "%{tag::%discord id of event-guild%::%arg-1%::image}%" if {tag::%discord id of event-guild%::%arg-1%::image} is set
+				set thumbnail of embed to "%{tag::%discord id of event-guild%::%arg-1%::thumbnail}%" if {tag::%discord id of event-guild%::%arg-1%::thumbnail} is set
+				set colour of the embed to orange
+				set footer of embed to "Requested by %event-user%##%tag of event-user%"
+				set footer icon of embed to avatar of event-user
+				set timestamp of embed to now
+			reply to event-message with last embed

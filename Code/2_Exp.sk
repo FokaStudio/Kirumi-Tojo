@@ -113,44 +113,33 @@ member property [e]xp level [amount]:
 		checkXPMember(expr-1)
 		setValue2(expr-1, "Level", ((xp level of expr-1) - change value))
 
-function leaderboardSort(indices: strings, values: integers, descending: boolean = false) :: strings:
-	loop {_indices::*}:
-		add 1 to {_i}
-		set {_list::%loop-value%} to {_values::%{_i}%}
-
-	loop {_list::*}:
-		add 1 to {_i}
-		set {_sorted::%loop-value%.%{_i}%} to loop-index
-	set {_sorted::*} to reversed {_sorted::*} if {_descending} is true
-	return {_sorted::*}
-
 discord command rank [<member=%event-member%>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: exp, level
 	description: Returns your level
 	category: leveling
-	usage: %{db_SI.%discord id of event-guild%::prefix}%rank [<member>]
+	usage: %{db_SI.prefix::%discord id of event-guild%}%rank [<member>]
 	trigger:
 		if arg-1 is a discord bot:
 			reply to event-message with ":x: **Bots can't gather EXP, neither can they have their own cards...**"
-			stop
-		set {_card} to genCard(arg-1)
-		make embed:
-			set author of embed to "%discord name of arg-1%'s Experience:"
-			set author icon of embed to avatar of arg-1
-			set color of embed to lime
-			set image of embed to "attachment://image.png"
-			set footer of embed to "Asked by %discord name of event-user%##%tag of event-user%"
-			set timestamp of embed to now
-		upload {_card} with last embed to event-channel
+		else:
+			set {_card} to genCard(arg-1)
+			make embed:
+				set author of embed to "%discord name of arg-1%'s Experience:"
+				set author icon of embed to avatar of arg-1
+				set color of embed to lime
+				set image of embed to "attachment://image.png"
+				set footer of embed to "Asked by %discord name of event-user%##%tag of event-user%"
+				set timestamp of embed to now
+			upload {_card} with last embed to event-channel
 
 
 discord command leaderboard [<int=1>]:
-	prefixes: %{db_SI.%discord id of event-guild%::prefix}%
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: levels, leveltop
 	description: Returns level leaderboard of a server
 	category: leveling
-	usage: %{db_SI.%discord id of event-guild%::prefix}%leaderboard [<page>]
+	usage: %{db_SI.prefix::%discord id of event-guild%}%leaderboard [<page>]
 	trigger:
 		set {_arg} to arg
 		set {_pages.max} to ({_arg}*10)
