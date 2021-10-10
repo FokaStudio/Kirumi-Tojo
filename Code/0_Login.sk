@@ -24,7 +24,7 @@ init:
 	Bukkit.getServer().unloadWorld("world", false)
 	make new discord bot:
 		enable all default intent
-		login to "NzQyMTA1NDQ0ODYzOTY3Mzk0.XzBRjQ.-chtCw9Qm4Iw6HEA1MHa2u2-BEg" with name "Kirumi"
+		login to "REDACTED" with name "Kirumi"
 	set online status of bot named "Kirumi" to do not disturb
 	set presence of bot "Kirumi" to playing "Project: SMP | play.projectsmp.tk"
 
@@ -121,3 +121,8 @@ discord command test:
 	prefixes: !
 	trigger:
 		reply with "%{guild_count}% %{db_SI.prefix::%discord id of event-guild%}%"
+
+on message receive:
+	mentioned members in event-message = self member of bot "Kirumi" in event-guild
+	length of content of event-message = length of mention tag of self member of bot "Kirumi" in event-guild
+	reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %{db_SI.prefix::%discord id of event-guild%}%**%nl%Do __*%{db_SI.prefix::%discord id of event-guild%}%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio"

@@ -5,13 +5,32 @@
 # Addons required: DiSky, Reqn, skript-json
 # Other plugins: <none>
 
+function colorBox() :: string:
+	set {_colors::*} to "red", "orange", "yellow", "green", "blue", "purple"
+	return ":%a random element of {_colors::*}%_square:"
+
+discord command !popper [<integer = 5>]:
+	category: fun
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	description: Creates a X by X grid of random colored boxes you can click to display
+	usage: popper <integer>, default is **5**
+	aliases: poppers
+	trigger:
+		loop arg-1 times:
+			if {_m} is set:
+				set {_m} to "%{_m}%%nl%"
+			loop arg-1 times:
+				if {_m} is not set:
+					set {_m} to "||%colorBox()%||"
+				else:
+					set {_m} to "%{_m}%||%colorBox()%||"
+		reply with {_m}
 
 discord command avatar [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: av, a
 	executable in: guild
-	bots: Butler
-	usage: %{db_SI.prefix::%discord id of event-guild%}%avatar [<member>]
+	usage: avatar [<member>]
 	category: general
 	description: Grab the Avatar of any member of this guild
 	trigger:
@@ -30,7 +49,6 @@ discord command avatar [<member=%event-member%>]:
 discord command clyde [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
-	bots: Butler
 	category: general
 	description: Make my good friend Clyde say something
 	trigger:
@@ -64,9 +82,8 @@ discord command whois [<member>]:
 discord command server [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
-	bots: Butler
 	category: minecraft
-	usage: %{db_SI.prefix::%discord id of event-guild%}%server <minecraft server>
+	usage: server <minecraft server>
 	aliases: mcserv, mcserver, serv, serverinfo
 	description: Grab all info about any server in a form of a neat embed
 	trigger:
@@ -108,9 +125,8 @@ discord command server [<text>]:
 discord command search [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
-	bots: Butler
 	category: general
-	usage: %{db_SI.prefix::%discord id of event-guild%}%search <query>
+	usage: search <query>
 	description: Search the web for anything you want 
 	trigger:
 		if arg-1 is not set:
@@ -119,15 +135,14 @@ discord command search [<text>]:
 		reply to event-message with "**Here is all that I found when searching for *%arg-1%***"
 		set {_arg} to arg-1
 		replace all " " in {_arg} with "%%20"
-		reply with "https://image.thum.io/get/auth/40904-Butler/nomention/https://google.com/search?q=%{_arg}%"
+		reply with "https://image.thum.io/get/auth/40904-Kirumi/nomention/https://google.com/search?q=%{_arg}%"
 
 discord command player [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	executable in: guild
 	aliases: mcplayer, playerinfo
-	usage: %{db_SI.prefix::%discord id of event-guild%}%player <player>
+	usage: player <player>
 	category: minecraft
-	bots: Butler
 	description: Grab any info about a specified player
 	trigger:
 		if arg-1 is not set:
