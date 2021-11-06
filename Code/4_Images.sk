@@ -12,7 +12,7 @@ discord command tableflip <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%tableflip [<member>]
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/tableflip?user=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://vacefron.nl/api/tableflip?user=%avatar of arg-1%?size=2048" with event-bot
 
 discord command wasted <user=%event-user%>:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -20,7 +20,7 @@ discord command wasted <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%wasted [<member>]
 	trigger:
-		reply to event-message with "https://some-random-api.ml/canvas/wasted?avatar=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://some-random-api.ml/canvas/wasted?avatar=%avatar of arg-1%?size=2048" with event-bot
 
 discord command trigger <user=%event-user%>:
 	aliases: triggered
@@ -29,7 +29,7 @@ discord command trigger <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%trigger [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/trigger?image=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://api.devs-hub.xyz/trigger?image=%avatar of arg-1%?size=2048" with event-bot
 
 discord command rainbow <user=%event-user%>:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -38,7 +38,7 @@ discord command rainbow <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%rainbow [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/rainbow?image=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://api.devs-hub.xyz/rainbow?image=%avatar of arg-1%?size=2048" with event-bot
 
 discord command magik <user=%event-user%> [<int=50>]:
 	aliases: magic, magicc
@@ -47,7 +47,7 @@ discord command magik <user=%event-user%> [<int=50>]:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%magik [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/magik?image=%avatar of arg-1%?size=2048&%""""%level=%arg-2%"
+		reply to event-message with "https://api.devs-hub.xyz/magik?image=%avatar of arg-1%?size=2048&%" with event-bot"""%level=%arg-2%" with event-bot
 
 discord command glitch <user=%event-user%>:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -55,7 +55,7 @@ discord command glitch <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%glitch [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/glitch?image=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://api.devs-hub.xyz/glitch?image=%avatar of arg-1%?size=2048" with event-bot
 
 discord command communist <user=%event-user%>:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -64,7 +64,7 @@ discord command communist <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%communist [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/communist?image=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://api.devs-hub.xyz/communist?image=%avatar of arg-1%?size=2048" with event-bot
 
 discord command stonks <user=%event-user%>:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -73,7 +73,7 @@ discord command stonks <user=%event-user%>:
 	category: image
 	usage: %{db_SI.prefix::%discord id of event-guild%}%stonks [<member>]
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/stonks?user=%avatar of arg-1%?size=2048"
+		reply to event-message with "https://vacefron.nl/api/stonks?user=%avatar of arg-1%?size=2048" with event-bot
 
 discord command wide [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -83,7 +83,7 @@ discord command wide [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%wide [<member>]
 	category: image
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/wide?image=%avatar of arg-1%"
+		reply to event-message with "https://vacefron.nl/api/wide?image=%avatar of arg-1%" with event-bot
 
 discord command wolverine [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -93,7 +93,7 @@ discord command wolverine [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%wolverine [<member>]
 	category: image
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/wolverine?user=%avatar of arg-1%"
+		reply to event-message with "https://vacefron.nl/api/wolverine?user=%avatar of arg-1%" with event-bot
 
 discord command drip [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -103,7 +103,7 @@ discord command drip [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%drip [<member>]
 	category: image
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/drip?user=%avatar of arg-1%"
+		reply to event-message with "https://vacefron.nl/api/drip?user=%avatar of arg-1%" with event-bot
 
 discord command iamspeed [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -114,7 +114,7 @@ discord command iamspeed [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%iamspeed [<member>]
 	category: image
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/iamspeed?user=%avatar of arg-1%"
+		reply to event-message with "https://vacefron.nl/api/iamspeed?user=%avatar of arg-1%" with event-bot
 
 discord command heaven [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -124,4 +124,4 @@ discord command heaven [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%heaven [<member>]
 	category: image
 	trigger:
-		reply to event-message with "https://vacefron.nl/api/heaven?user=%avatar of arg-1%"
+		reply to event-message with "https://vacefron.nl/api/heaven?user=%avatar of arg-1%" with event-bot

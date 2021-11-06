@@ -1,33 +1,3 @@
-# Copyright 2021  FokaStudio
-
-# Coded by: FokaStudio
-# Original by: <none>
-# Addons required: DiSky
-# Other plugins: <none>
-
-
-import:
-	org.bukkit.Bukkit
-
-function AND(conditions: booleans) :: boolean:
-	if {_conditions::*} contains false:
-		return false
-	return true
-	
-function OR(conditions: booleans) :: boolean:
-	if {_conditions::*} contains true:
-		return true
-	return false
-
-# Login and startup message
-init:
-	Bukkit.getServer().unloadWorld("world", false)
-	make new discord bot:
-		enable all default intent
-		login to "REDACTED" with name "Kirumi"
-	set online status of bot named "Kirumi" to do not disturb
-	set presence of bot "Kirumi" to playing "Project: SMP | play.projectsmp.tk"
-
 # Utility, returns a color for the embed based on input
 function kirumiColor(s: string) :: color:
 	switch {_s}:
@@ -42,23 +12,71 @@ function kirumiColor(s: string) :: color:
 		case "other" or "?":
 			return lime
 
+expression Kirumi:
+	return type: bot
+	get:
+		return bot named "Kirumi"
+
 # Effect to log smth to #audit-logs
 effect [Kirumi] log %string% as %string% in [guild] %guild%:
 	trigger:
 		if {db_SI.audit_channel::%discord id of expr-3%} is set:
 			make embed:
-				set author of the embed to "Project: SMP | %expr-2 in proper case%"
-				set author icon of the embed to avatar of user with id "722065810033475616"
+				set author of the embed to "Kirumi Tojo | %expr-2 in proper case%"
+				set author icon of the embed to avatar of bot named "Kirumi"
 				set title of the embed to "%expr-2%"
 				set description of the embed to "%expr-1%"
 				set timestamp of the embed to now
 				set footer of the embed to "Kirumi Tojo"
 				set color of the embed to kirumiColor(expr-2)
-			send last embed to channel with id {db_SI.audit_channel::%discord id of expr-3%}
+			send last embed to text channel with id {db_SI.audit_channel::%discord id of expr-3%}
 
 effect do nothing:
 	trigger:
 		stop
+
+function AND(conditions: booleans) :: boolean:
+	if {_conditions::*} contains false:
+		return false
+	return true
+	
+function OR(conditions: booleans) :: boolean:
+	if {_conditions::*} contains true:
+		return true
+	return false
+
+# Login, startup message and some setup
+init:
+	create section stored in {_section}:
+		clear {internal.status::*}
+		set {internal.status::1::text} to "cleaning the config files"
+		set {internal.status::1::type} to "playing"
+		set {internal.status::2::text} to "%{guild.count}% servers I serve at"
+		set {internal.status::2::type} to "watching"
+		set {internal.status::3::text} to "to your commands"
+		set {internal.status::3::type} to "listening"
+	run section {_section} async and wait
+	if "Kirumi" is loaded:
+		shutdown bot named "Kirumi"
+	make new discord bot:
+		enable all default intent
+		login to "REDACTED" with name "Kirumi"
+	wait 1 seconds
+	set discord online status of bot named "Kirumi" to online
+	create section stored in {_loop}:
+		set {_id} to random integer between 1 and 3
+		set {_text} to {internal.status::%{_id}%::text}
+		set {_type} to {internal.status::%{_id}%::type}
+		switch {_type}:
+			case "playing":
+				set presence of bot named "Kirumi" to playing "%{_text}%"
+			case "listening":
+				set presence of bot named "Kirumi" to listening "%{_text}%"
+			case "watching":
+				set presence of bot named "Kirumi" to watching "%{_text}%"
+	while "Kirumi" is loaded:
+		run section {_loop} async and wait
+		wait 15 minutes
 
 # Force smth to log into the audit log channel
 discord command log <text> <text>:
@@ -82,7 +100,7 @@ discord command announce <text>:
 	category: moderation
 	description: <STAFF> Make me help you with making announcements (accepts formatting codes that are accesible only to bots, such as [link](URL))
 	trigger:
-		delete discord entity event-message
+		destroy discord entity event-message
 		reply with arg-1
 
 discord command prefix <text>:
@@ -92,14 +110,16 @@ discord command prefix <text>:
 	category: Utility
 	usage: !prefix <new prefix>
 	trigger:
-		if arg-1 = {db_SI.prefix::%discord id of event-guild%}:
+		set {_arg} to arg-1
+		if {_arg} = {db_SI.prefix::%discord id of event-guild%}:
 			reply with ":x: **My new prefix can't be my old prefix!**"
 		else:
-			set {db_SI.prefix::%discord id of event-guild%} to arg-1
+			replace all """" in {_arg} with ""
+			set {db_SI.prefix::%discord id of event-guild%} to {_arg}
 			reply with ":white_check_mark: **Succesfully changed my prefix!**"
 
 on bot join:
-	if "%event-bot%" = "Kirumi":
+	if event-bot = Kirumi:
 		add 1 to {guild_count}
 		set {db_SI.prefix::%discord id of event-guild%} to "!"
 		set {db_SI.%discord id of event-guild%::expconfig::required::1} to 200
@@ -109,20 +129,18 @@ on bot join:
 		set {db_SI.%discord id of event-guild%::expconfig::max} to 25
 
 on bot leave:
-	if "%event-bot%" = "Kirumi":
+	if event-bot = Kirumi:
 		remove 1 from {guild_count}
+		if {guild_count} < 0:
+			set {guild_count} to 0
 		clear {db_SI.%discord id of event-guild%::*}
 		clear {tags::%discord id of event-guild%::*}
 		clear {tag::%discord id of event-guild%::*}
 		delete {db_SI.suggestion_channel::%discord id of event-guild%}
 		delete {db_SI.prefix::%discord id of event-guild%}
 
-discord command test:
-	prefixes: !
-	trigger:
-		reply with "%{guild_count}% %{db_SI.prefix::%discord id of event-guild%}%"
-
 on message receive:
-	mentioned members in event-message = self member of bot "Kirumi" in event-guild
-	length of content of event-message = length of mention tag of self member of bot "Kirumi" in event-guild
-	reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %{db_SI.prefix::%discord id of event-guild%}%**%nl%Do __*%{db_SI.prefix::%discord id of event-guild%}%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio"
+	set {_m::*} to mentioned members of event-message
+	set {_sm} to self member of Kirumi in event-guild
+	if {_m::*} contains {_sm}:
+		reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %{db_SI.prefix::%discord id of event-guild%}%**%nl%Do __*%{db_SI.prefix::%discord id of event-guild%}%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio" with event-bot

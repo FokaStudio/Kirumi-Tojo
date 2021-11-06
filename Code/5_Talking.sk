@@ -14,31 +14,28 @@ discord command talk:
 	trigger:
 		if {kirumi.talkmode::%discord id of event-guild%::%discord id of event-user%} = false:
 			set {kirumi.talkmode::%discord id of event-guild%::%discord id of event-user%} to true
-			reply to event-message with "**You have enabled my advanced AI functions that allow me to talk freely, I hope we will have a great time together!**"
+			reply to event-message with "**You have enabled my advanced AI functions that allow me to talk freely, I hope we will have a great time together!**" with event-bot
 		else:
 			set {kirumi.talkmode::%discord id of event-guild%::%discord id of event-user%} to false
-			reply to event-message with "**You have disabled my advanced AI functions, I hope you will happen to enable them once again soon!**%nl%*I will be waiting forward to this moment%{db_SI.prefix::%discord id of event-guild%}%* ❤"
+			reply to event-message with "**You have disabled my advanced AI functions, I hope you will happen to enable them once again soon!**%nl%*I will be waiting forward to this moment%{db_SI.prefix::%discord id of event-guild%}%* ❤" with event-bot
 
 on message receive:
 	{kirumi.talkmode::%discord id of event-guild%::%discord id of event-user%} = true
-	if event-message is a webhook:
-		stop
-	if event-user is a discord bot:
-		stop
+	author of event-message != null
+	event-user is not a discord bot
 	set {_message} to "%event-message%"
-	if first index of "%{db_SI.prefix::%discord id of event-guild%}%" in {_message} = 1:
-		stop
+	first index of "%{db_SI.prefix::%discord id of event-guild%}%" in {_message} != 1
 	replace all " " in {_message} with "%%20"
 	set {_url} to "https://api.affiliateplus.xyz/api/chatbot?message=%{_message}%|botname=Kirumi%%20Tojo|ownername=FokaStudio|user=%event-user%"
 	replace all "|" in {_url} with "&"
-	reply with personal {_url} and store it in {msg}
+	reply with personal {_url} and store it in {_msg}
 	wait 2 ticks
-	edit {msg} to show ":speech_balloon: **Sending...**"
+	edit {_msg} to show ":speech_balloon: **Sending...**"
 	send a request to {_url}
-	edit {msg} to show ":speech_balloon: **Sending...**"
+	edit {_msg} to show ":speech_balloon: **Sending...**"
 	set {_body} to body of the last http response
-	edit {msg} to show ":speech_balloon: **Thinking...**"
+	edit {_msg} to show ":speech_balloon: **Thinking...**"
 	map json {_body} to {_response::*}
-	edit {msg} to show ":speech_balloon: **Loading response...**"
-	reply with "%{_response::message}%"
-	delete discord entity {msg}
+	edit {_msg} to show ":speech_balloon: **Loading response...**"
+	reply with "%{_response::message}%" with event-bot
+	destroy discord entity {_msg}

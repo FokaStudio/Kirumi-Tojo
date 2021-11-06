@@ -1,11 +1,20 @@
-# Copyright 2021  FokaStudio
-
-# Coded by: FokaStudio
-# Original by: <none>
-# Addons required: DiSky, Reqn, skript-json
-# Other plugins: <none>
-
-
+discord command popper [<integer = 5>]:
+	category: fun
+	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	description: Creates a X by X grid of random colored boxes you can click to display
+	usage: popper <integer>, default is **5**
+	aliases: poppers
+	trigger:
+		loop arg-1 times:
+			if {_m} is set:
+				set {_m} to "%{_m}%%nl%"
+			loop arg-1 times:
+				if {_m} is not set:
+					set {_m} to "||%colorBox()%||"
+				else:
+					set {_m} to "%{_m}%||%colorBox()%||"
+		reply with {_m} with event-bot
+ 
 discord command joke:
 	aliases: jokes, randomjoke
 	category: fun
@@ -15,7 +24,7 @@ discord command joke:
 	trigger:
 		send a request to "https://v2.jokeapi.dev/joke/Miscellaneous,Dark,Spooky,Christmas?lang=en&type=single" with headers "User-agent: Kirumi Tojo"
 		map json body of last http response to {_joke::*}
-		reply to event-message with "**%{_joke::joke}%**"
+		reply to event-message with "**%{_joke::joke}%**" with event-bot
 
 discord command achievement [<text>]:
 	aliases: advancement
@@ -31,6 +40,6 @@ discord command achievement [<text>]:
 			replace all " " with "%%20" in {_misc}
 			set {_arg::*} to {_misc} split at "|"
 			if {_arg::2} is not set:
-				reply with ":x: **Use `|` to separate title and description%{db_SI.prefix::%discord id of event-guild%}%**"
+				reply with ":x: **Use `|` to separate title and description%{db_SI.prefix::%discord id of event-guild%}%**" with event-bot
 				stop
-			reply to event-message with "https://minecraftskinstealer.com/achievement/%random integer between 1 and 39%/%{_arg::1}%/%{_arg::2}%"
+			reply to event-message with "https://minecraftskinstealer.com/achievement/%random integer between 1 and 39%/%{_arg::1}%/%{_arg::2}%" with event-bot

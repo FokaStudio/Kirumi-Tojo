@@ -1,5 +1,5 @@
-# > Made by Sky with <3 (and updated by FokaStudio)
-# > Need at least a stable version of DiSky v2.0
+# > Made by Sky with <3
+# > Need at least a stable version of DiSky v3.0-beta4
 
 # > It use a libs to parse expression into math expression:
 # > exp4j: https://github.com/fasseg/exp4j
@@ -7,15 +7,48 @@
 # > You can edit it as you want, but please credit me for the basics <3
 
 options:
-	version: 1.0-FOKAPATCH
+	version: 1.3
+	bot: "bot"
+
+# > Visual Embed
+function getMemberCalc(m: member) :: embedbuilder:
+	set {_id} to discord id of {_m}
+	set {_current} to {CALC::%{_id}%::OPERATION}
+	if {CALC::%{_id}%::ISRESULT} is not set:
+		set {CALC::%{_id}%::ISRESULT} to false
+	if {_current} is not set:
+		set {_current} to "0"
+		set {CALC::%{_id}%::OPERATION} to "0"
+	
+	set {_isResult} to false
+	if {CALC::%{_id}%::ISRESULT} is true:
+		set {_isResult} to true
+		set {CALC::%{_id}%::ISRESULT} to false
+	
+	if {_current} contains "ERROR":
+		set {_err} to {CALC::%{_id}%::LASTERROR}
+		replace all "java.lang.IllegalArgumentException: " with "" in {_err}
+		make embed:
+			set description of embed to "```%{_err}%```%nl%**Your Expression was ```%{CALC::%{_id}%::LASTGOODEXPR}%```**"
+			set color of embed to dark red
+			set author of embed to "An Math error occured. Full Message:"
+			set author icon of embed to "https://zupimages.net/up/21/21/8oif.png"
+			set footer of embed to "Use the 'Clear' button to reset the calculator"
+	else:
+		make embed:
+			set title of embed to "%discord name of {_m}%'s Calculator"
+			if {_isResult} is true:
+				set description of embed to "Result: ```%{_current}%```"
+				set color of embed to skript color from rgb 0 255 0
+			else:
+				set description of embed to "```%{_current}%```"
+				set color of embed to skript color from rgb 54 57 63
+	
+	return last embed
 
 # > Main command
-discord command calculator:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
-	aliases: calc
-	category: general
-	usage: %{db_SI.prefix::%discord id of event-guild%}%calculator
-	description: A simple calculator
+discord command calc:
+	prefixes: !
 	trigger:
 		make embed:
 			set author of embed to "Loading calculator ..."
@@ -29,20 +62,20 @@ discord command calculator:
 
 # > Buttons Execution
 on button click:
-	
-	set {_id} to discord id of event-button
+	set {_id} to event-button
 	set {_pars::*} to split {_id} at ":"
 	{_pars::1} is "calc"
 
 	defer the interaction
-	
-	set {_m} to member with id {_pars::2} in event-guild
+
+	retrieve member with id {_pars::2} in guild event-guild with bot {@bot} and store it in {_m}
 	set {_id} to discord id of {_m}
 	
 	discord id of {_m} is discord id of event-member
 	
 	if size of (split {_pars::3} at "") is smaller than 3:
 		{CALC::%{_id}%::OPERATION} doesn't contain "ERROR"
+		{CALC::%{_id}%::OPERATION} doesn't contain "none"
 		set {_current} to {CALC::%{_id}%::OPERATION}
 		set {_size} to size of (split {_current} at "")
 		set {_last} to ({_size} - 1)st element of (split {_current} at "")
@@ -91,59 +124,58 @@ on button click:
 			edit {CALC::%{_id}%::MSG} to show getMemberCalc({_m}) and keep buttons
 		else if {_action} is "exit":
 			set {CALC::%{_id}%::OPERATION} to "0"
-			delete discord entity event-message
-			reply with "**:wave: Goodbye %mention tag of event-user%!**"
+			destroy discord entity event-message with bot {@bot}
+			reply with "**:wave: Goodbye %mention tag of event-user% !**"
 		else if {_action} is "disky":
 			make embed:
 				set title of embed to "Calculator v{@version}"
-				add "This calculator was developed by ItsTheSky, and is free to download in %mention tag of channel with id ""818225595284455464""%." to {_l::*}
-				add "You must have DiSky v2.0 or higher to run it!" to {_l::*}
+				add "This calculator was developed by ItsTheSky." to {_l::*}
+				add "You must have DiSky v3.0 or higher to run it!" to {_l::*}
 				add "" to {_l::*}
 				add "This program uses a Java library to parse mathematical expressions, available [HERE](https://github.com/fasseg/exp4j)." to {_l::*}
 				add "Don't hesitate to mention me in case of bugs :)" to {_l::*}
 				set description of embed to join {_l::*} with nl
 				set color of embed to lime
 				set footer of embed to "Asked by %discord name of event-user%"
-			reply with last embed
+			send last embed to event-channel
 
 # > Buttons Adding
 function setupButtons(msg: message, m: member):
 
 	set {_id} to discord id of {_m}
 	if {CALC::%{_id}%::MSG} is set:
-		delete discord entity {CALC::%{_id}%::MSG}
+		destroy discord entity {CALC::%{_id}%::MSG} with bot {@bot}
 	set {CALC::%{_id}%::MSG} to {_msg}
 
 	set {_row} to new buttons row
-	add new button with url "calc:%{_id}%:1" with style secondary with content "1" to buttons of {_row}
-	add new button with url "calc:%{_id}%:2" with style secondary with content "2" to buttons of {_row}
-	add new button with url "calc:%{_id}%:3" with style secondary with content "3" to buttons of {_row}
-	add new button with url "calc:%{_id}%:*" with style primary with content "x" to buttons of {_row}
-	add new button with url "calc:%{_id}%:exit" with style danger with content "Exit" to buttons of {_row}
+	add new button with id "calc:%{_id}%:1" with style secondary with content "1" to buttons of {_row}
+	add new button with id "calc:%{_id}%:2" with style secondary with content "2" to buttons of {_row}
+	add new button with id "calc:%{_id}%:3" with style secondary with content "3" to buttons of {_row}
+	add new button with id "calc:%{_id}%:*" with style primary with content "x" to buttons of {_row}
+	add new button with id "calc:%{_id}%:exit" with style danger with content "Exit" to buttons of {_row}
 
 	set {_row2} to new buttons row
-	add new button with url "calc:%{_id}%:4" with style secondary with content "4" to buttons of {_row2}
-	add new button with url "calc:%{_id}%:5" with style secondary with content "5" to buttons of {_row2}
-	add new button with url "calc:%{_id}%:6" with style secondary with content "6" to buttons of {_row2}
-	add new button with url "calc:%{_id}%:/" with style primary with content "÷" to buttons of {_row2}
-	add new button with url "calc:%{_id}%:remove" with style danger with content "←" to buttons of {_row2}
+	add new button with id "calc:%{_id}%:4" with style secondary with content "4" to buttons of {_row2}
+	add new button with id "calc:%{_id}%:5" with style secondary with content "5" to buttons of {_row2}
+	add new button with id "calc:%{_id}%:6" with style secondary with content "6" to buttons of {_row2}
+	add new button with id "calc:%{_id}%:/" with style primary with content "÷" to buttons of {_row2}
+	add new button with id "calc:%{_id}%:remove" with style danger with content "←" to buttons of {_row2}
 
 	set {_row3} to new buttons row
-	add new button with url "calc:%{_id}%:7" with style secondary with content "7" to buttons of {_row3}
-	add new button with url "calc:%{_id}%:8" with style secondary with content "8" to buttons of {_row3}
-	add new button with url "calc:%{_id}%:9" with style secondary with content "9" to buttons of {_row3}
-	add new button with url "calc:%{_id}%:+" with style primary with content "+" to buttons of {_row3}
-	add new button with url "calc:%{_id}%:clear" with style danger with content "Clear" to buttons of {_row3}
+	add new button with id "calc:%{_id}%:7" with style secondary with content "7" to buttons of {_row3}
+	add new button with id "calc:%{_id}%:8" with style secondary with content "8" to buttons of {_row3}
+	add new button with id "calc:%{_id}%:9" with style secondary with content "9" to buttons of {_row3}
+	add new button with id "calc:%{_id}%:+" with style primary with content "+" to buttons of {_row3}
+	add new button with id "calc:%{_id}%:clear" with style danger with content "Clear" to buttons of {_row3}
 
 	set {_row4} to new buttons row
-	add new button with url "calc:%{_id}%:disky" with style primary with content "?" to buttons of {_row4}
-	add new button with url "calc:%{_id}%:0" with style secondary with content "0" to buttons of {_row4}
-	add new button with url "calc:%{_id}%:." with style primary with content "." to buttons of {_row4}
-	add new button with url "calc:%{_id}%:-" with style primary with content "-" to buttons of {_row4}
-	add new button with url "calc:%{_id}%:result" with style success with content "=" to buttons of {_row4}
+	add new button with id "calc:%{_id}%:disky" with style primary with content "?" to buttons of {_row4}
+	add new button with id "calc:%{_id}%:0" with style secondary with content "0" to buttons of {_row4}
+	add new button with id "calc:%{_id}%:." with style primary with content "." to buttons of {_row4}
+	add new button with id "calc:%{_id}%:-" with style primary with content "-" to buttons of {_row4}
+	add new button with id "calc:%{_id}%:result" with style success with content "=" to buttons of {_row4}
 	
 	add row {_row}, {_row2}, {_row3} and {_row4} to message {_msg}
-
 
 # > Calculation
 import:
@@ -156,29 +188,5 @@ function eval(input: text, m: member) :: text:
 	if "%last java throwable%" contains "java.lang.IllegalArgumentException":
 		set {CALC::%{_id}%::LASTGOODEXPR} to "%{_input}%"
 		return "ERROR (Clear to refresh)"
+	set {CALC::%{_id}%::ISRESULT} to true
 	return "%{_n}%"
-
-# > Visual Embed
-function getMemberCalc(m: member) :: embed:
-	set {_id} to discord id of {_m}
-	set {_current} to {CALC::%{_id}%::OPERATION}
-	if {_current} is not set:
-		set {_current} to "0"
-		set {CALC::%{_id}%::OPERATION} to "0"
-	
-	if {_current} contains "ERROR":
-		set {_err} to {CALC::%{_id}%::LASTERROR}
-		replace all "java.lang.IllegalArgumentException: " with "" in {_err}
-		make embed:
-			set description of embed to "```%{_err}%```%nl%**Your Expression was ```%{CALC::%{_id}%::LASTGOODEXPR}%```**"
-			set color of embed to dark red
-			set author of embed to "An Math error occured. Full Message:"
-			set author icon of embed to "https://zupimages.net/up/21/21/8oif.png"
-			set footer of embed to "Use the 'Clear' button to reset the calculator"
-	else:
-		make embed:
-			set title of embed to "%discord name of {_m}%'s Calculator"
-			set description of embed to "```%{_current}%```"
-			set color of embed to color from hex "36393f"
-	
-	return last embed

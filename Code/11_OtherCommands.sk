@@ -9,23 +9,6 @@ function colorBox() :: string:
 	set {_colors::*} to "red", "orange", "yellow", "green", "blue", "purple"
 	return ":%a random element of {_colors::*}%_square:"
 
-discord command !popper [<integer = 5>]:
-	category: fun
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
-	description: Creates a X by X grid of random colored boxes you can click to display
-	usage: popper <integer>, default is **5**
-	aliases: poppers
-	trigger:
-		loop arg-1 times:
-			if {_m} is set:
-				set {_m} to "%{_m}%%nl%"
-			loop arg-1 times:
-				if {_m} is not set:
-					set {_m} to "||%colorBox()%||"
-				else:
-					set {_m} to "%{_m}%||%colorBox()%||"
-		reply with {_m}
-
 discord command avatar [<member=%event-member%>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	aliases: av, a
@@ -37,14 +20,18 @@ discord command avatar [<member=%event-member%>]:
 		set {_red} to random integer between 1 to 255
 		set {_green} to random integer between 1 to 255
 		set {_blue} to random integer between 1 to 255
+		set {_png}, {_jpg} and {_webp} to "%avatar of arg-1%?size=2048"
+		replace ".png" in {_jpg} with ".jpg"
+		replace ".png" in {_webp} with ".webp"
+		set {_desc::*} to "**Click below for other file formats:**" and "[`.webp`](%{_webp}%) [`.jpg`](%{_jpg}%)"
 		make embed:
-			set title of embed to "Avatar of %discord name of arg-1%"
-			set colour of the embed to color from rgb {_red}, {_green}, {_blue}
-			set description of embed to "**Avatar of %discord name of arg-1%##%tag of arg-1%**"
-			set image of embed to avatar of arg-1
+			set title of embed to "Avatar of %discord name of arg-1%##%tag of arg-1%"
+			set embed color of the embed to skript color from rgb {_red}, {_green}, {_blue}
+			set description of embed to join {_desc::*} with nl
+			set image of embed to "%{_png}%"
 			set footer of embed to "Requested by %discord name of event-user%##%tag of event-user%"
 			set timestamp of embed to now
-		reply to event-message with last embed
+		reply to event-message with last embed with event-bot
 
 discord command clyde [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -54,7 +41,7 @@ discord command clyde [<text>]:
 	trigger:
 		set {_arg1} to (arg-1 ? "Include something in the first argument!")
 		replace all " " with "%%20" in {_arg1}
-		reply to event-message with "https://ctk-api.herokuapp.com/clyde/%{_arg1}%"
+		reply to event-message with "https://ctk-api.herokuapp.com/clyde/%{_arg1}%" with event-bot
 
 discord command whois [<member>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -63,21 +50,21 @@ discord command whois [<member>]:
 	description: Grab info of one of the members of this server
 	trigger:
 		if arg 1 is not set:
-			reply to event-message with ":x: You **must** specify a member!"
+			reply to event-message with ":x: You **must** specify a member!" with event-bot
 			stop
 		make embed:
 			set title of embed to "Who is %discord name of arg-1% ?"
 			add "`•` Username: %discord name of arg 1%" to {_l::*}
-			add "`•` Nick: %discord nickname of arg 1%" to {_l::*}
+			add "`•` Nick: %discord nick name of arg 1%" to {_l::*}
 			add "`•` Tag: %tag of arg 1%" to {_l::*}
 			add "`•` Mention: %mention tag of arg 1%" to {_l::*}
 			add "`•` Mutual Guilds: %size of mutual guild of arg 1%" to {_l::*}
 			set description of embed to join {_l::*} with nl
 			set thumbnail of embed to avatar of arg-1
 			set footer of embed to "Asked by %discord name of event-member%"
-			set color of embed to color of arg-1
+			set embed color of embed to color of arg-1
 			set timestamp of embed to now
-		reply to event-message with last embed
+		reply to event-message with last embed with event-bot
 
 discord command server [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -88,39 +75,39 @@ discord command server [<text>]:
 	description: Grab all info about any server in a form of a neat embed
 	trigger:
 		if arg-1 is not set:
-			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%{db_SI.prefix::%discord id of event-guild%}%mcserv mc.hypixel.net```"
+			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%{db_SI.prefix::%discord id of event-guild%}%mcserv mc.hypixel.net```" with event-bot
 		send http request to "https://api.mcsrvstat.us/2/%arg-1%"
 		set {_server} to last http response
 		set {_server} to {_server}'s body
 		map json {_server} to {_server::*}
 		if {_server::error} is set:
-			reply to event-message with ":x: **There isn't any server with this IP, try one that actually exist...**"
+			reply to event-message with ":x: **There isn't any server with this IP, try one that actually exist...**" with event-bot
 			stop
 		if {_server::online} = true:
 			make embed:
-				set color of the embed to light red
+				set embed color of the embed to light red
 				set title of embed to "All info about %arg-1%"
 				set description of the embed to "Not sure what Protocol is? Click on the title%{db_SI.prefix::%discord id of event-guild%}%"
 				add inline field named ":green_circle: Server Status" with value "Online" to fields of embed
 				add inline field named ":pushpin: Online" with value "%{_server::players::online}% / %{_server::players::max}%" to fields of embed
 				add inline field named ":compass: Version" with value "%{_server::version}%" to fields of embed
 				add inline field named ":lock: Protocol" with value "%{_server::protocol}%" to fields of embed
-				add inline field named "%reaction "":776710047903383562:""% IP" with value "%{_server::ip}%" to fields of embed
-				add inline field named "%reaction "":776710041477578772:""% Port" with value "%{_server::port}%" to fields of embed
+				add inline field named ":globe_with_meridians: IP" with value "%{_server::ip}%" to fields of embed
+				add inline field named ":passport_control: Port" with value "%{_server::port}%" to fields of embed
 				add inline field named ":page_facing_up: MOTD" with value "```%{_server::motd::clean::1}%%nl%%{_server::motd::clean::2}%```" to fields of embed
 				set the thumbnail of embed to "https://api.minetools.eu/favicon/%arg-1%"
 				set title url of embed to "https://wiki.vg/Protocol_version_numbers"
 				set the footer of embed to "Requested by %event-user%##%tag of event-user%"
 				set the timestamp of embed to now		
-			reply to event-message with last embed
+			reply to event-message with last embed with event-bot
 		else:
 			make embed:
-				set color of the embed to dark red
+				set embed color of the embed to dark red
 				set title of embed to "%arg-1% is currently offline"
 				set description of embed to "or I am unable to reach it :(%nl%Try searching for the server that is currently online, like **Hypixel**, which is never down"
 				set the footer of embed to "Requested by %event-user%##%tag of event-user%"
 				set the timestamp of embed to now		
-			reply to event-message with last embed
+			reply to event-message with last embed with event-bot
 
 discord command search [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -130,12 +117,12 @@ discord command search [<text>]:
 	description: Search the web for anything you want 
 	trigger:
 		if arg-1 is not set:
-			reply to event-message with ":x: **Hey, did you forgot about 1st argument again?**"
+			reply to event-message with ":x: **Hey, did you forgot about 1st argument again?**" with event-bot
 			stop
-		reply to event-message with "**Here is all that I found when searching for *%arg-1%***"
+		reply to event-message with "**Here is all that I found when searching for *%arg-1%***" with event-bot
 		set {_arg} to arg-1
 		replace all " " in {_arg} with "%%20"
-		reply with "https://image.thum.io/get/auth/40904-Kirumi/nomention/https://google.com/search?q=%{_arg}%"
+		reply with "https://image.thum.io/get/auth/40904-Kirumi/nomention/https://google.com/search?q=%{_arg}%" with event-bot
 
 discord command player [<text>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -146,14 +133,14 @@ discord command player [<text>]:
 	description: Grab any info about a specified player
 	trigger:
 		if arg-1 is not set:
-			reply to event-message with ":x: **Do you really hate that 1st argument? SPECIFY THE PLAYER**"
+			reply to event-message with ":x: **Do you really hate that 1st argument? SPECIFY THE PLAYER**" with event-bot
 			stop
 		send http request to "https://api.minetools.eu/uuid/%arg-1%"
 		set {_player} to last http response
 		set {_player} to {_player}'s body
 		map json {_player} to {_player::*}
 		if {_player::error} is set:
-			reply to event-message with ":x: **This player doesn't exist**"
+			reply to event-message with ":x: **This player doesn't exist**" with event-bot
 			stop
 		send http request to "https://api.minetools.eu/profile/%{_player::id}%"
 		set {_playerinfo} to last http response
@@ -165,7 +152,7 @@ discord command player [<text>]:
 		else: 
 			set {_model} to "normal"
 		make embed:
-			set color of the embed to light red
+			set embed color of the embed to light red
 			set title of embed to "All info about %arg-1%"
 			set description of the embed to "Click on the title to go to %arg-1%'s NameMC profile"
 			add inline field named ":id: Profile ID" with value "%{_playerinfo::decoded::profileId}%" to fields of embed
@@ -175,4 +162,4 @@ discord command player [<text>]:
 			set title url of embed to "https://namemc.com/profile/%{_playerinfo::decoded::profileName}%"
 			set the footer of embed to "Requested by %event-user%##%tag of event-user%"
 			set the timestamp of embed to now		
-		reply to event-message with last embed
+		reply to event-message with last embed with event-bot

@@ -7,17 +7,22 @@ discord command setup-suggestions [<channel>]:
 	trigger:
 		if arg-1 is set:
 			set {db_SI.suggestion_channel::%discord id of event-guild%} to discord id of arg-1
-			reply with "**:trophy: %arg-1% is now a Suggestion channel! Every message posted there will be automatically deleted and replaced with a small poll!**"
+			allow permission (message write) to public role of event-guild in arg-1
+			deny permission (message add reaction) to public role of event-guild in arg-1
+			reply with "**:trophy: %arg-1% is now a Suggestion channel! Every message posted there will be automatically deleted and replaced with a small poll!**" with event-bot
 		else:
 			if {db_SI.suggestion_channel::%discord id of event-guild%} is set:
-				reply with ":x: **Suggestion channel was already created, you can only assign a new one now!**"
+				reply with ":x: **Suggestion channel was already created, you can only assign a new one now!**" with event-bot
 			else:
-				make new text channel:
-					set discord name of text channel to "suggestions"
-				create text channel builder in event-guild and store it in {_s}
+				set {_action} to new text channel action in event-guild
+				set channel name of {_action} to "suggestions"
+				set topic of {_action} to "Any message written here will be deleted and turned into a poll instead" with event-bot
+				set slowmode of {_action} to 20
+				create {_action} and store it in {_s}
 				allow permission (message write) to public role of event-guild in {_s}
+				deny permission (message add reaction) to public role of event-guild in {_s}
 				set {db_SI.suggestion_channel::%discord id of event-guild%} to discord id of {_s}
-				reply with ":trophy: **Succesfully created a new Suggestion channel!**"
+				reply with ":trophy: **Succesfully created a new Suggestion channel!**" with event-bot
 
 discord command setup-audit [<channel>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
@@ -28,15 +33,16 @@ discord command setup-audit [<channel>]:
 	trigger:
 		if arg-1 is set:
 			set {db_SI.audit_channel::%discord id of event-guild%} to discord id of arg-1
-			reply with "**:trophy: %arg-1% is now a Audit Logs channel! It will log some useful info for you there**"
+			reply with "**:trophy: %arg-1% is now a Audit Logs channel! It will log some useful info for you there**" with event-bot
 		else:
 			if {db_SI.audit_channel::%discord id of event-guild%} is set:
-				reply with ":x: **Audit Logs channel was already created, you can only assign a new one now!**"
+				reply with ":x: **Audit Logs channel was already created, you can only assign a new one now!**" with event-bot
 			else:
-				make new text channel:
-					set discord name of text channel to "audit-logs"
-				create text channel builder in event-guild and store it in {_a}
+				set {_action} to new text channel action in event-guild
+				set channel name of {_action} to "audit-logs"
+				set topic of {_action} to "Logs for Staff Members"
+				create {_action} and store it in {_a}
 				deny permission (view channel) to public role of event-guild in {_a}
 				set {db_SI.audit_channel::%discord id of event-guild%} to discord id of {_a}
-				reply with ":: **Succesfully created a new Audit Logs channel!**"
+				reply with ":trophy: **Succesfully created a new Audit Logs channel!**" with event-bot
 				Kirumi log "If you see this message, it means that you have configured the Audit Logs channel properly!" as "info" in event-guild

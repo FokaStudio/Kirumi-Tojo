@@ -6,13 +6,13 @@
 # Other plugins: <none>
 
 on message receive:
-	if event-channel = channel with id {db_SI.suggestion_channel::%discord id of event-guild%}:
+	if event-textchannel = text channel with id {db_SI.suggestion_channel::%discord id of event-guild%}:
 		if event-member is a discord bot:
 			react to event-message with reaction "white_check_mark"
 			react to event-message with reaction "x"
 		else:
 			set {_att::*} to attachments of event-message
-			delete discord entity event-message
+			destroy discord entity event-message
 			make embed:
 				set author of embed to "%event-member%##%tag of event-member%"
 				set author icon of embed to avatar of event-member
@@ -21,7 +21,7 @@ on message receive:
 				set image of embed to attachment url of {_att::1} if {_att::1} is set
 				set color of embed to yellow, orange or light red
 				set timestamp of the embed to now
-				set footer of embed to "%discord id of event-member%"
+				set footer of embed to discord id of event-member
 			reply with last embed
 
 on reaction add:

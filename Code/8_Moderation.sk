@@ -1,11 +1,3 @@
-# Copyright 2021  FokaStudio
-
-# Coded by: FokaStudio
-# Original by: <none>
-# Addons required: DiSky
-# Other plugins: <none>
-
-
 member property condition staff:
 	check:
 		set {_roles::*} to roles of expr-1
@@ -16,39 +8,35 @@ member property condition staff:
 		else if expr-1 has discord permission administrator:
 			continue
 
-discord command purge [<int>]:
+discord command purge [<integer>]:
 	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
 	usage: %{db_SI.prefix::%discord id of event-guild%}%purge <number>
 	permissions: manage server
 	permission message: **:x: You can't use that command%{db_SI.prefix::%discord id of event-guild%}%**
-	description: Clean a number of messages
+	description: Make me perform a quick cleaning over a number of messages
+	aliases: clear, clean
 	category: moderation
 	trigger:
-		if arg-1 is not set:
-			reply with "**:x: You must define an amount!"
-			stop
-		send message "**:warning: You are about to clear %arg-1% messages, are you sure ?**" to event-channel and store it in {_msg}
-		set {_id} to discord id of event-user
-		set {_emsg} to event-message
-		set {_row} to a new buttons row
-		add new button with url "%discord id of event-user%:purge:%arg-1%:%discord id of event-message%:%discord id of {_msg}%:confirm" with style success with content "Yes please%{db_SI.prefix::%discord id of event-guild%}%" with emoji "✅" to buttons of {_row}
-		add new button with url "%discord id of event-user%:purge:%arg-1%:%discord id of event-message%:%discord id of {_msg}%:cancel" with style danger with content "Nah, nevermind." with emoji "❌" to buttons of {_row}
-		add row {_row} to message {_msg}
-
-on button click:
-	set {_id} to discord id of event-button
-	set {_pars::*} to split {_id} at ":"
-	{_pars::2} is "purge"
-	discord id of event-user is {_pars::1}
-	if {_pars::6} is "confirm":
-		set {_amount} to {_pars::3} parsed as number
-		purge last {_amount} messages from event-channel
-		reply with "**✅ Purged %{_amount}% messages!"
-	else:
-		set {_msg} to message with id {_pars::4} in event-channel
-		set {_amsg} to message with id {_pars::5} in event-channel
-		reply to {_msg} with "**✅ Purge command cancelled!"
-		delete discord entity {_amsg}
+		set {_amount} to arg 1
+		destroy discord entity event-message
+		if {_amount} is not set:
+			reply with personal ":x: **You have to specify a number between 1 and 100!**"
+			set {_exception} to true
+		else if event-member doesn't have permission administrator:
+			reply with personal ":x: **You cannot delete messages according to your current permissions!**"
+			set {_exception} to true
+		else if {_amount} is bigger than 100:
+			reply with personal ":x: **You cannot delete more that 100 messages in a row!**"
+			set {_exception} to true
+		else if {_amount} is smaller than 1:
+			reply with personal ":x: **You cannot delete less than 1 messages!**"
+			set {_exception} to true
+		stop if {_exception} = true
+		purge last {_amount} messages from event-channel:
+			if last discord exception is set:
+				reply with personal ":warning: **While performing my task, an exception occured: `%last disky exception%`**"
+			else:
+				reply with personal ":white_check_mark: I have finished cleaning **%{_amount}%** of messages in this channel (%mention tag of event-channel%)!**"
 
 # Command to ban users
 discord command ban <member> [<string>] [<number>]:
@@ -65,10 +53,14 @@ discord command ban <member> [<string>] [<number>]:
 			send "You have been banned from the skUnity Discord for `%arg-2%`. If you wish to appeal this ban, you may talk to %event-user%##%tag of event-user% at a later date." to {_user}
 			set {_user} to arg-1
 			if arg-3 is not set:
-				disky ban arg-1 because arg-2
+				ban discord arg-1 due to arg-2 with event-bot:
+					if last discord exception is set:
+						reply with personal ":warning: **While performing my task, an exception occured: `%last disky exception%`**"
 			else:
-				disky ban arg-1 removing arg-3 of message because arg-2
-			reply with "%{_user}%##%tag of {_user}% (%discord id of {_user}%) was banned for %arg-2%"
+				ban discord arg-1 due to arg-2 removing arg-3 days of messages with event-bot:
+					if last discord exception is set:
+						reply with personal ":warning: **While performing my task, an exception occured: `%last disky exception%`**"
+			reply with "%{_user}%##%tag of {_user}% (%discord id of {_user}%) was banned for %arg-2%" with event-bot
 			send "**-=Ban=-**%nl%**User**: %{_user}%##%tag of {_user}% (%discord id of {_user}%)%nl%**Reason**: %arg-2%%nl%**Responsible Moderator**: %event-user%##%tag of event-user%" to channel with id {db_SI.audit_channel::%discord id of event-guild%}
 			
 			
@@ -111,7 +103,7 @@ discord command punishments <member>:
 				loop {db_PU.kicked::%discord id of event-guild%::%discord id of arg-1%} times:
 					append "Kicked for: %{db_PU.kicked::%discord id of event-guild%::%discord id of arg-1%::%loop-value%::reason}%%nl%" to {_m}
 			append "```" to {_m}
-			reply with {_m}
+			reply with {_m} with event-bot
 			
 
 
@@ -125,27 +117,28 @@ discord command unban <string> [<string>]:
 	category: moderation
 	trigger:
 		if event-member is staff:
-			if arg-2 is not set:
-				reply with "You must include a reason to use this command"
-				stop			
-			if user with id arg-1 is banned from event-guild:
-				do nothing
-			else:
-				reply with "The provided user was not banned"
+			destroy discord entity event-message
+			set {_reason} to arg-2 ? "**No reason provided**"
+			retrieve user with id arg-1 and store it in {_user}
+			set {_ban} to event-guild.retrieveBan({_user}).complete()
+			if "%{_ban}%" is not set:
+				reply with hidden ":x: **This user (%{_user}%) was never banned from this guild**"
 				stop
-			loop banned users of event-guild:
-				if discord id of loop-value = arg-1:
-					retrieve user with id discord id of loop-value and store it in {_user}
-					unban loop-value from event-guild
+			set {_banned::*} to ...event-guild.retrieveBanList().complete()
+			loop {_banned::*}:
+				set {_baned.user} to loop-value.getUser().getIdLong()
+				if "%{_baned.user}%" = arg-1:
+					retrieve user with id {_baned.user} and store it in {_user}
+					unban {_user} from event-guild
 					reply with "%discord name of {_user}%##%tag of {_user}% has been unbanned"
 					set {_m} to a new message builder
 					append "**-=Pardon=-**%nl%" to {_m}
-					append "**User**: %discord name of loop-value%##%tag of loop-value%%nl%" to {_m}
-					append "**Reason**: %arg-2%%nl%" to {_m}
+					append "**User**: %discord name of {_user}%##%tag of {_user}%%nl%" to {_m}
+					append "**Reason**: %{_reason}%%nl%" to {_m}
 					append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
 					send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
 					stop
-			reply with "The provided user was not banned"
+			reply with hidden "**This user is already unbanned**"
 			
 # Command to warn users, keeps track of warning count	
 discord command warn <member> [<string>]:
@@ -157,10 +150,10 @@ discord command warn <member> [<string>]:
 	trigger:
 		if event-member is staff:
 			if arg-2 is not set:
-				reply with "You must include a reason to use this command"
+				reply with "You must include a reason to use this command" with event-bot
 				stop
 			if arg-1 is a bot:
-				reply with "You may not warn bots"
+				reply with "You may not warn bots" with event-bot
 				stop
 			if {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%} is not set:
 				set {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%} to 1
@@ -175,7 +168,7 @@ discord command warn <member> [<string>]:
 			append "**Count**: %{db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}%%nl%" to {_m}
 			append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
 			send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
-			reply with "I have issued a warning to %discord name of arg-1%##%tag of arg-1%"
+			reply with "I have issued a warning to %discord name of arg-1%##%tag of arg-1%" with event-bot
 			
 # Command to get warnings for a user 
 discord command warnings [<member>] [<number>]:
@@ -188,17 +181,17 @@ discord command warnings [<member>] [<number>]:
 	trigger:
 		if event-member is staff:
 			if arg-1 is not set:
-				reply with "You must include a user to get the warnings of"
+				reply with "You must include a user to get the warnings of" with event-bot
 				stop
 			set {_user} to arg-1
 			if {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%} is not set:
-				reply with "%discord name of arg-1%##%tag of arg-1% currently has no warnings"
+				reply with "%discord name of arg-1%##%tag of arg-1% currently has no warnings" with event-bot
 				stop
 			if arg-2 is set:
 				if {db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%} is not set:
-					reply with "That user does not have a warning attached to that number"
+					reply with "That user does not have a warning attached to that number" with event-bot
 					stop
-				reply with "That user was warned for `%{db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%}%`"
+				reply with "That user was warned for `%{db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%}%`" with event-bot
 				stop
 			set {_m} to a new message builder
 			append "```vbs%nl%" to {_m}
@@ -210,7 +203,7 @@ discord command warnings [<member>] [<number>]:
 			reply with {_m}
 		else:
 			if {db_PU.warnings::%discord id of event-guild%::%discord id of event-member%} is not set:
-				reply with "You currently have no warnings"
+				reply with "You currently have no warnings" with event-bot
 				stop
 			set {_m} to a new message builder
 			append "Here is a list of your current warnings %mention tag of event-member%" to {_m}
@@ -232,14 +225,14 @@ discord command relieve <member> <number>:
 	trigger:
 		if event-member is staff:
 			if {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%} is not set:
-				reply with "%discord name of arg-1%##%tag of arg-1% currently has no warnings"
+				reply with "%discord name of arg-1%##%tag of arg-1% currently has no warnings" with event-bot
 				stop
 			if {db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%} is not set:
-				reply with "%discord name of arg-1%##%tag of arg-1% does not have a warning attached to that number"
+				reply with "%discord name of arg-1%##%tag of arg-1% does not have a warning attached to that number" with event-bot
 				stop
 			subtract 1 from {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}
 			send "Your warning for `%{db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%}%` has been reverted by %event-user%! Your new warning count is `%{db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}%`" to arg-1
-			reply with "Successfully reverted %discord name of arg-1%##%tag of arg-1%'s warning. New warning count is %{db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}%"
+			reply with "Successfully reverted %discord name of arg-1%##%tag of arg-1%'s warning. New warning count is %{db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}%" with event-bot
 			if {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%} is 0:
 				delete {db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}
 			delete {db_PU.warns::%discord id of event-guild%::%discord id of arg-1%::%arg-1%}
@@ -255,7 +248,7 @@ discord command mute <member> [<string>]:
 	trigger:
 		if event-member is staff:
 			if arg-2 is not set:
-				reply with "You must include a reason to use this command"
+				reply with "You must include a reason to use this command" with event-bot
 				stop
 			set {_roles::*} to roles of arg-1
 			if {_roles::*} contains role with id "881155284964368435":
@@ -268,7 +261,7 @@ discord command mute <member> [<string>]:
 			else:
 				add 1 to {db_PU.mutes::%discord id of event-guild%::%arg-1%}
 			set {db_PU.mutes::%discord id of event-guild%::%discord id of arg-1%::%{db_PU.mutes::%discord id of event-guild%::%discord id of arg-1%}%} to arg-2
-			send "You have been muted for `%arg-2%` and will be unmuted at the responsible staff member's discretion." to arg-1
+			send "You have been muted for `%arg-2%` and will be unmuted at the responsible staff member's discretion." to arg-1 with event-bot
 			reply with "%discord name of arg-1%##%tag of arg-1%"
 			set {_m} to a new message builder
 			append "**-=Mute=-**%nl%" to {_m}
@@ -287,11 +280,11 @@ discord command unmute <member> [<string>]:
 	trigger:
 		if event-member is staff:
 			if arg-2 is not set:
-				reply with "You must include a reason to use this command"
+				reply with "You must include a reason to use this command" with event-bot
 				stop
 			set {_roles::*} to roles of arg-1
 			if {_roles::*} does not contain role with id "881155284964368435":
-				reply with "That user is not currently muted"
+				reply with "That user is not currently muted" with event-bot
 				stop
 			remove role with id "881155284964368435" from roles of arg-1
 			if {db_PU.tempmute::%discord id of event-guild%::%discord id of arg-1%} is true:
@@ -299,7 +292,7 @@ discord command unmute <member> [<string>]:
 				delete {db_PU.tempmute::%discord id of event-guild%::%discord id of arg-1%::time}
 				delete {db_PU.tempmute::%discord id of event-guild%::%discord id of arg-1%::length}
 				delete {db_PU.tempmute::%discord id of event-guild%::%discord id of arg-1%::*}
-			reply with "%arg-1%##%tag of arg-1% has been unmuted"
+			reply with "%arg-1%##%tag of arg-1% has been unmuted" with event-bot
 			set {db_PU.evaders::%arg-1%} to false
 			set {_m} to a new message builder
 			append "**-=Un-Mute=-**%nl%" to {_m}
@@ -317,18 +310,16 @@ discord command kick <member> [<string>]:
 	category: moderation
 	trigger:
 		if event-member is staff:
-			if arg-2 is not set:
-				reply with "You must include a reason to use this command"
-				stop
+			set {_reason} to arg-2 ? "**No reason provided**"
 			if arg-1 is staff:
-				reply with "You must not kick Staff members%{db_SI.prefix::%discord id of event-guild%}%"
+				reply to event-message with "You must not kick Staff members%{db_SI.prefix::%discord id of event-guild%}%" with event-bot
 				stop
-			disky kick arg-1 because of arg-2
+			kick discord arg-1 with reason {_reason}
 			if arg-1 is a bot:
 				stop
 			else:
 				send "You have been kicked from the skUnity Discord for `%arg-2%`." to arg-1
-			reply with "I have successfully kicked %discord name of arg-1%##%tag of arg-1% from the server"
+			reply with "I have successfully kicked %discord name of arg-1%##%tag of arg-1% from the server" with event-bot
 			if {db_PU.kicked::%discord id of event-guild%::%discord id of arg-1%} is not set:
 				set {db_PU.kicked::%discord id of event-guild%::%discord id of arg-1%} to 1
 			else:

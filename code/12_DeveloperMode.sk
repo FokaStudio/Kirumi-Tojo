@@ -1,0 +1,82 @@
+options:
+	# > It will be the only member who could use '*eval' to make the code executing instead of only parsing.
+	OwnerID: 619922683408154634
+
+member property condition [a[n]] (owner|developer):
+	check:
+		discord id of expr-1 = "{@OwnerID}"
+		continue
+
+discord command eval [<string>]:
+	prefixes: "dev ", "parse "
+	trigger:
+		set {_ex} to false
+		if event-member is a developer:
+			used prefix is "parse "
+			set {_ex} to true
+		
+		# > We set a line number to every lines
+		# > *huh, it could be easier and faster through stream but whatever*
+		set {_code} to arg-1
+		set {_finalcode} to ""
+		set {_i} to 1
+		loop split {_code} at nl:
+			set {_finalcode} to "%{_finalcode}%%nl%%{_i}% | %loop-value%"
+			add 1 to {_i}
+		set {_code} to {_finalcode}
+
+		# destroy event-message
+		# > This is as you like ^
+		make embed:
+			set author of embed to "Code of %event-member%:"
+			set author icon of embed to avatar of event-member
+			set color of embed to yellow
+			set description of embed to "__Your current code:__```applescript%nl%%{_code}%%nl%```%nl%__Result:__%nl%```Under execution ...```"
+		set {_last} to last embed
+		reply with last embed and store it in {_msg}
+
+		wait 1 second
+		if {_ex} is true:
+			eval arg-1 and store the errors in {_err::*}
+		else:
+			eval without executing arg-1 and store the errors in {_err::*}
+
+		# > Don't ask me why I need to do something like that, is empty condition doesn't work here lmao
+		if "%{_err::1}%" contains "<none>":
+			set {_result} to "No error found!"
+			if {_ex} is true:
+				set {_result} to "%{_result}% The code has been executed."
+			set embed color of {_last} to lime
+		else:
+			set {_result} to join {_err::*} with nl
+			set embed color of {_last} to red
+		set embed description of {_last} to "__Your current code:__```applescript%nl%%{_code}%%nl%```%nl%__Result:__%nl%```%{_result}%```"
+		edit {_msg} to show {_last}
+
+discord command test:
+	prefixes: "dev "
+	trigger:
+		if event-member is a developer:
+			reply with "%{guild_count}% %{db_SI.prefix::%discord id of event-guild%}%"
+
+discord command reload [<text>]:
+	aliases: r
+	prefixes: "dev "
+	trigger:
+		if event-member is a developer:
+			if arg-1 is not set:
+				set {_msg::1} to "<:branch:906504708351459358> **List of all scripts you can reload:**"
+				loop alphabetically sorted {_scripts::*}:
+					set {_msg::*} to {_msg::*} and "<:tag:906504708305342484> `%loop-value%`"
+				reply to event-message with join {_msg::*} with nl with event-bot
+			else:
+				set {_script} to arg-1
+				if first index of ".sk" in arg-1 = (-1):
+					set {_script} to "%{_script}%.sk"
+				if all enabled scripts doesn't contain {_script}:
+					reply to event-message with ":x: **This script doesn't exist!** %nl%<:reply:906517020651171860>*Do `dev reload` for a full list of those!*" with event-bot
+					stop
+				set {_reload} to now
+				reload script {_script}
+				
+				reply with "**Reloaded %arg-1% in %difference between {_reload} and now%**" with event-bot

@@ -40,6 +40,7 @@
 # > Do not edit anything, except if you know what you are doing :)
 init:
 	register text font from "plugins/SkImage/fonts/Minecraftia.ttf"
+	register text font from "plugins/SkImage/fonts/IllagerThin.ttf"
 
 function genCode2(length: number) :: text:
 	set {_chars::*} to split "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" at ""
@@ -121,17 +122,17 @@ discord command rank [<member=%event-member%>]:
 	usage: %{db_SI.prefix::%discord id of event-guild%}%rank [<member>]
 	trigger:
 		if arg-1 is a discord bot:
-			reply to event-message with ":x: **Bots can't gather EXP, neither can they have their own cards...**"
+			reply to event-message with ":x: **Bots can't gather EXP, neither can they have their own cards...**" with event-bot
 		else:
 			set {_card} to genCard(arg-1)
 			make embed:
 				set author of embed to "%discord name of arg-1%'s Experience:"
-				set author icon of embed to avatar of arg-1
-				set color of embed to lime
+				set author icon of embed to discord user avatar of arg-1
+				set embed color of embed to lime
 				set image of embed to "attachment://image.png"
 				set footer of embed to "Asked by %discord name of event-user%##%tag of event-user%"
 				set timestamp of embed to now
-			upload {_card} with last embed to event-channel
+			upload {_card} with content last embed to event-textchannel
 
 
 discord command leaderboard [<int=1>]:
@@ -164,11 +165,11 @@ discord command leaderboard [<int=1>]:
 			set description of embed to join {_text::*} with nl
 			set author of the embed to "Project: SMP"
 			set thumbnail of embed to "https://cdn.discordapp.com/emojis/872526935819964477.gif?v=1"
-			set colour of the embed to gold
+			set embed color of the embed to gold
 			set footer of embed to "Requested by %discord name of event-member%##%tag of event-member%"
-			set footer icon of embed to avatar of event-member
+			set footer icon of embed to discord user avatar of event-member
 			set timestamp of embed to now
-		reply to event-message with last embed
+		reply to event-message with last embed with event-bot
 
 on message receive:
 	if event-member is a discord bot:
@@ -193,22 +194,20 @@ on message receive:
 
 			set xp level of event-member to (xp level of event-member) + 1
 			set {_newmax} to {_max} * 1.5
-			if {db_SI.%discord id of event-guild%::expconfig::required::1} is set:
-				set {_newmax} to {EXPCONFIG::MAXEXPLEVEL::%xp level of event-member%}
-			set max xp of event-member to {_newmax}
+			set max xp amount of event-member to {_newmax}
 			set xp of event-member to {_reste}
 #			set {_role} to {EXPCONFIG::REWARD::%xp level of event-member%}
 #			if {_role} is set:
 #				add role with id "%{_role}%" to roles of event-member
 			make embed:
 				set author of embed to "%discord name of event-user% has reached next level!"
-				set author icon of embed to avatar of event-user
-				set color of embed to green
+				set author icon of embed to discord user avatar of event-user
+				set embed color of embed to green
 				set image of embed to "attachment://image.png"
 				set footer of embed to "Well Played %discord name of event-user%!"
 				set timestamp of embed to now
 			set {_card} to genLevelUp(event-member)
-			upload {_card} with last embed to event-channel
+			upload {_card} with content last embed to event-textchannel
 #			upload {_card} with last embed to channel with id "727033287826210871"
 #			set {_role} to {EXPCONFIG::REWARD::%xp level of event-member%}
 		else:
@@ -216,7 +215,7 @@ on message receive:
 
 function genLevelUp(m: member) :: image:
 
-	set {_avatar} to resized (rounded image (image from url "%avatar of {_m}%?size=1024")) to 300, 300 with algo 4
+	set {_avatar} to resized (rounded image (image from url "%discord user avatar of {_m}%?size=1024")) to 300, 300 with algo 4
 	set {_lvl} to image from url "https://zupimages.net/up/21/23/rf4n.png"
 
 	set {_img} to new image with size 1500, 373
@@ -232,12 +231,12 @@ function genCard(m: member) :: image:
 	set {_max} to max xp of {_m}
 	set {_level} to xp level of {_m}
 
-	set {_fname} to new font style with name "Minecraftia" and with size 24
-	set {_flvl} to new font style with name "Minecraftia" and with size 20
+	set {_fname} to new font style with name "Dialog" and with size 24
+	set {_flvl} to new font style with name "Dialog" and with size 20
 
-	set {_color} to main color of (image from url avatar of {_m})
+	set {_color} to main color of (image from url discord user avatar of {_m})
 	set {_name} to "%discord name of {_m}%##%tag of {_m}%"
-	set {_avatar} to resized (rounded image (image from url avatar of {_m})) to 110, 110 with algo 4
+	set {_avatar} to resized (rounded image (image from url discord user avatar of {_m})) to 110, 110 with algo 4
 
 	set {_img} to new image with size 720, 180
 	set {_sx} to ({_current} / {_max}) * 560
@@ -257,8 +256,8 @@ function genCard(m: member) :: image:
 	draw rounded rect with anti-aliases at 15, 135 with size {_sx}, 30 with {_color} with arc size 12, 12 on {_img}
 	draw rect with anti-aliases at 850, -400 with size 500, 500 with {_color} with rotation 54 degree on {_img}
 
-	if {_m} is a booster:
-		set {_lvl} to image from url "https://i0.wp.com/i.thexyznetwork.xyz/badges/nitroboost.png"
-		set {_lvl} to resized {_lvl} to size 64, 64
-		draw image {_lvl} on {_img} at 460, 43
+#	if {_m} is a booster:
+#		set {_lvl} to image from url "https://i0.wp.com/i.thexyznetwork.xyz/badges/nitroboost.png"
+#		set {_lvl} to resized {_lvl} to size 64, 64
+#		draw image {_lvl} on {_img} at 460, 43
 	return {_img}
