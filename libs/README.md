@@ -1,0 +1,6 @@
+# Libraries
+Additional libraries used by Tojo-san for different things
+
+**exp4j** - Calculator code (parsing text as mathematical expressions)
+**commons-lang3** - To be added...
+**apache-commons-codec* - To be added...
