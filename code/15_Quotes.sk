@@ -1,0 +1,20 @@
+on message receive:
+    # We get the content of message
+    set {_content} to message content of event-message
+    # Verify if it contain discord's jump URL base ...
+    {_content} contains "https://discord.com/channels/"
+    # ... and replace it to only get IDs
+    replace all "https://discord.com/channels/" with "" in {_content}
+    # We get things like '818182471140114432/818182471677247527/822533241784369223'
+    # First is the guild id, second the channel id and latest is the message id.
+    set {_var::*} to split {_content} at "/"
+    # We verify if the guild the message come from is equal to the event-guild
+    discord id of event-guild is {_var::1}
+    # Then we get the message's content and reply it via an embed
+    set {_msg} to message with id {_var::3} in channel with id {_var::2}
+    make embed:
+        set title of embed to "Quote from %discord name of author of {_msg}%:"
+        set description of embed to "\`\`\`%message content of {_msg}%\`\`\"
+        set footer of embed to "Link usage available in ##examples"
+        set color of embed to orange
+    reply with last created embed
