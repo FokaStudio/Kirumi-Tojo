@@ -1,3 +1,5 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
 member property condition staff:
 	check:
 		set {_roles::*} to roles of expr-1
@@ -9,10 +11,10 @@ member property condition staff:
 			continue
 
 discord command purge [<integer>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
-	usage: %{db_SI.prefix::%discord id of event-guild%}%purge <number>
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%purge <number>
 	permissions: manage server
-	permission message: **:x: You can't use that command%{db_SI.prefix::%discord id of event-guild%}%**
+	permission message: **:x: You can't use that command%Kirumi discord prefix of event-guild%**
 	description: Make me perform a quick cleaning over a number of messages
 	aliases: clear, clean
 	category: moderation
@@ -42,7 +44,7 @@ discord command purge [<integer>]:
 discord command ban <member> [<string>] [<number>]:
 	description: <STAFF>Ban a member. Input can be a direct mention, user id, or name##discrim. Must provide a reason. The last argument is the amount of days worth of messages to clear.
 	usage: ban <user> <reason> [<days of messages to prune>]
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
 	category: moderation
 	trigger:
@@ -61,7 +63,7 @@ discord command ban <member> [<string>] [<number>]:
 					if last discord exception is set:
 						reply with personal ":warning: **While performing my task, an exception occured: `%last disky exception%`**"
 			reply with "%{_user}%##%tag of {_user}% (%discord id of {_user}%) was banned for %arg-2%" with event-bot
-			send "**-=Ban=-**%nl%**User**: %{_user}%##%tag of {_user}% (%discord id of {_user}%)%nl%**Reason**: %arg-2%%nl%**Responsible Moderator**: %event-user%##%tag of event-user%" to channel with id {db_SI.audit_channel::%discord id of event-guild%}
+			send "**-=Ban=-**%nl%**User**: %{_user}%##%tag of {_user}% (%discord id of {_user}%)%nl%**Reason**: %arg-2%%nl%**Responsible Moderator**: %event-user%##%tag of event-user%" to channel with id auditchannel of event-guild
 			
 			
 			
@@ -71,7 +73,7 @@ discord command punishments <member>:
 	usage: punishments <user>
 	executable in: guild
 	category: moderation
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	trigger:
 		if event-member is staff:
 			set {_user} to arg-1
@@ -109,43 +111,28 @@ discord command punishments <member>:
 
 # Command to unban a user 
 discord command unban <string> [<string>]:
-	aliases: pardon
-	description: <STAFF>UnBan a user by their ID. Must provide a reason for why you unbanned them.
-	usage: unban <user id> <reason>
-	executable in: guild
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
-	category: moderation
+	prefixes: !
 	trigger:
-		if event-member is staff:
-			destroy discord entity event-message
-			set {_reason} to arg-2 ? "**No reason provided**"
-			retrieve user with id arg-1 and store it in {_user}
-			set {_ban} to event-guild.retrieveBan({_user}).complete()
-			if "%{_ban}%" is not set:
-				reply with hidden ":x: **This user (%{_user}%) was never banned from this guild**"
-				stop
-			set {_banned::*} to ...event-guild.retrieveBanList().complete()
-			loop {_banned::*}:
-				set {_baned.user} to loop-value.getUser().getIdLong()
-				if "%{_baned.user}%" = arg-1:
-					retrieve user with id {_baned.user} and store it in {_user}
-					unban {_user} from event-guild
-					reply with "%discord name of {_user}%##%tag of {_user}% has been unbanned"
-					set {_m} to a new message builder
-					append "**-=Pardon=-**%nl%" to {_m}
-					append "**User**: %discord name of {_user}%##%tag of {_user}%%nl%" to {_m}
-					append "**Reason**: %{_reason}%%nl%" to {_m}
-					append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
-					send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
-					stop
-			reply with hidden "**This user is already unbanned**"
-			
+		retrieve bans of event-guild with event-bot and store them in {_banned::*}
+		broadcast "%{_banned::*}%"
+		loop {_banned::*}:
+			set {_baned.user} to discord id of banned user of loop-value
+			broadcast "%{_banned.user}%"
+			if "%{_baned.user}%" = arg-1:
+				broadcast "matches"
+				unban banned user of loop-value from event-guild with event-bot:
+					if last disky exception is set:
+						reply with "An error occured: %last disky exception%" with event-bot
+					else:
+						reply with "%discord name of banned user of loop-value%##%tag of banned user of loop-value% has been unbanned" with event-bot
+						broadcast "theoretically unbanned"
+
 # Command to warn users, keeps track of warning count	
 discord command warn <member> [<string>]:
 	description: <STAFF>Warn a user, may provide a reason
 	usage: warn <user> <reason>
 	executable in: guild
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
@@ -167,7 +154,7 @@ discord command warn <member> [<string>]:
 			append "**Reason**: %arg-2%%nl%" to {_m}
 			append "**Count**: %{db_PU.warnings::%discord id of event-guild%::%discord id of arg-1%}%%nl%" to {_m}
 			append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
-			send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
+			send {_m} to channel with id auditchannel of event-guild
 			reply with "I have issued a warning to %discord name of arg-1%##%tag of arg-1%" with event-bot
 			
 # Command to get warnings for a user 
@@ -176,7 +163,7 @@ discord command warnings [<member>] [<number>]:
 	executable in: guild
 	aliases: warns
 	usage: warnings <user> [<warning number>]
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
@@ -220,7 +207,7 @@ discord command relieve <member> <number>:
 	description: <STAFF>Remove a warning by number from a user
 	executable in: guild
 	usage: relieve <user> <warning number>
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
@@ -243,7 +230,7 @@ discord command mute <member> [<string>]:
 	description: <STAFF>Mute a user, must provide a reason.
 	executable in: guild
 	usage: mute <user> <reason>
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
@@ -268,14 +255,14 @@ discord command mute <member> [<string>]:
 			append "**User**: %discord name of arg-1%##%tag of arg-1% (%discord id of arg-1%)%nl%" to {_m}
 			append "**Reason**: %arg-2%%nl%" to {_m}
 			append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
-			send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
+			send {_m} to channel with id auditchannel of event-guild
 	
 # Command to unmute users
 discord command unmute <member> [<string>]:
 	description: <STAFF>Un-mute a user, must provide a reason
 	executable in: guild
 	usage: unmute <user> <reason>
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
@@ -299,20 +286,20 @@ discord command unmute <member> [<string>]:
 			append "**User**: %arg-1%##%tag of arg-1% (%discord id of arg-1%)%nl%" to {_m}
 			append "**Reason**: %arg-2%%nl%" to {_m}
 			append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
-			send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}			
+			send {_m} to channel with id auditchannel of event-guild			
 			
 # Command to kick users, may provide a reason 
 discord command kick <member> [<string>]:
 	description: <STAFF>kick a user, must provide a reason
 	usage: kick <user> <reason>
 	executable in: guild
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	category: moderation
 	trigger:
 		if event-member is staff:
 			set {_reason} to arg-2 ? "**No reason provided**"
 			if arg-1 is staff:
-				reply to event-message with "You must not kick Staff members%{db_SI.prefix::%discord id of event-guild%}%" with event-bot
+				reply to event-message with "You must not kick Staff members%Kirumi discord prefix of event-guild%" with event-bot
 				stop
 			kick discord arg-1 with reason {_reason}
 			if arg-1 is a bot:
@@ -330,4 +317,4 @@ discord command kick <member> [<string>]:
 			append "**User**: %discord name of arg-1%##%tag of arg-1% (%discord id of arg-1%)%nl%" to {_m}
 			append "**Reason**: %arg-2%%nl%" to {_m}
 			append "**Responsible Moderator**: %event-user%##%tag of event-user%" to {_m}
-			send {_m} to channel with id {db_SI.audit_channel::%discord id of event-guild%}
+			send {_m} to channel with id auditchannel of event-guild
