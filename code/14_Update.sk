@@ -1,0 +1,28 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+on disky command:
+	set {_ver} to Kirumi current version
+	set {_ver.serv} to value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+	set {_ver.serv} to "unknown" if {_ver.serv} is not set
+	if OR(check ["1.2a" != {_ver.serv}], check [{_ver.serv} = "unknown"]) = true:
+		cancel event
+		reply to event-message with "**OH SNAP!**%nl%*I have encountered a problem!*%nl%In latest version, my database system has switched to **MySQL** and **JSON**, rather than **YAML**!%nl%This causes all commands to malfunction!%nl%But stay calm, as I am about to clean up all those `.yml` files and put them into `MySQL` tables!%nl%%nl%```%nl%Proceeding with update...%nl%```" with event-bot and store it in {_msg}
+		wait 10 seconds
+		edit {_msg} to show "**Proceeding with database cleanup...**"
+		wait 3 seconds
+		set {_prefix} to "%{db_SI::%discord id of event-guild%::prefix}%"
+		set {_prefix} to "!!" if "%{_prefix}%" = "<none>"
+		set {_audit} to "%{db_SI::%discord id of event-guild%::audit_channel}%"
+		set {_audit} to "000000000000000000" if "%{_audit}%" = "<none>"
+		set {_suggestions} to "%{db_SI::%discord id of event-guild%::suggestion_channel}%"
+		set {_suggestions} to "000000000000000000" if "%{_suggestions}%" = "<none>"
+		set value "prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to {_prefix}
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to {_audit}
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to {_suggestions}
+		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
+		edit {_msg} to show ":white_check_mark: **Succesfuly updated stored guild data! You can execute all commands like before now**"
+		wait 3 seconds
+		clear {db_SI::%discord id of event-guild%::*}
+		wait 5 seconds
+		destroy discord entity {_msg}
+		destroy discord entity event-message
