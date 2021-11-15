@@ -2,6 +2,19 @@ options:
 	# > It will be the only member who could use '*eval' to make the code executing instead of only parsing.
 	OwnerID: 619922683408154634
 
+import:
+	ch.njol.skript.log.SkriptLogger
+
+effect reload script [file] %string% and store error[s] in %~objects%:
+	trigger:
+		set {_logHandler} to SkriptLogger.startRetainingLog()
+		reload script expr-1
+		{_logHandler}.stop()
+		loop ...{_logHandler}.getLog():
+			add 1 to {_index}
+			set {_errors::%{_index}%} to loop-value.getMessage()
+		set raw exprs-2 to {_errors::*}
+
 member property condition [a[n]] (owner|developer):
 	check:
 		discord id of expr-1 = "{@OwnerID}"
@@ -10,9 +23,9 @@ member property condition [a[n]] (owner|developer):
 discord command eval [<string>]:
 	prefixes: "dev ", "parse "
 	trigger:
+		event-member is a developer
 		set {_ex} to false
-		if event-member is a developer:
-			used prefix is "parse "
+		if used prefix is "parse ":
 			set {_ex} to true
 		
 		# > We set a line number to every lines
@@ -57,7 +70,7 @@ discord command test:
 	prefixes: "dev "
 	trigger:
 		if event-member is a developer:
-			reply with "%{guild_count}% %{db_SI.prefix::%discord id of event-guild%}%"
+			reply with "%{guild_count}% %{db_SI::%discord id of event-guild%::prefix}%"
 
 discord command reload [<text>]:
 	aliases: r
@@ -66,7 +79,7 @@ discord command reload [<text>]:
 		if event-member is a developer:
 			if arg-1 is not set:
 				set {_msg::1} to "<:branch:906504708351459358> **List of all scripts you can reload:**"
-				loop alphabetically sorted {_scripts::*}:
+				loop alphabetically sorted all enabled scripts:
 					set {_msg::*} to {_msg::*} and "<:tag:906504708305342484> `%loop-value%`"
 				reply to event-message with join {_msg::*} with nl with event-bot
 			else:
@@ -77,6 +90,8 @@ discord command reload [<text>]:
 					reply to event-message with ":x: **This script doesn't exist!** %nl%<:reply:906517020651171860>*Do `dev reload` for a full list of those!*" with event-bot
 					stop
 				set {_reload} to now
-				reload script {_script}
-				
-				reply with "**Reloaded %arg-1% in %difference between {_reload} and now%**" with event-bot
+				reload script {_script} and store errors in {_errors::*}
+				set {_msg::1} to "**Reloaded %arg-1% in %difference between {_reload} and now%**"
+				if {_errors::*} is set:
+					set {_msg::*} to {_msg::1}, "**I have encountered errors though!**" and {_errors::*}
+				reply to event-message with join {_msg::*} with nl with event-bot
