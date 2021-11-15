@@ -1,0 +1,310 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+options:
+	light blue: skript color from rgb 51, 173, 255
+	magenta: skript color from rgb 221, 38, 229
+	red: skript color from rgb 216, 36, 36
+	blue: skript color from rgb 52, 51, 255
+
+expression [the] [minute] time (from|of) %number%:
+	return type: string
+	get:
+		set {_n} to rounded expr-1
+		set {_t::*} to "%floor({_n}/60)%:%mod({_n}, 60)%" split at ":"
+		if length of {_t::2} = 1:
+			set {_t::2} to "0%{_t::2}%"
+		return "%{_t::1}%:%{_t::2}%"
+
+expression [the] progressbar of %number% and %number% with character %string% with length %integer%:
+	return type: string
+	get:
+		set {_index} to floor(expr-1 / expr-2 * expr-4)
+		loop expr-4 times:
+			set {_string} to join {_string} and "▬" with ""
+		return join {_string}.substring(0, {_index}), expr-3, {_string}.substring({_index}+1)
+
+function toSeconds(time: timespan) :: number:
+	broadcast "%((unix timestamp of now) - (unix timestamp of ({_time} ago)))%"
+	return (((unix timestamp of now) - (unix timestamp of ({_time} ago)))/1000)
+
+discord command play [<string>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: p
+	description: Queue a song, the input has to be either a search query or an URL
+	category: music
+	usage: %Kirumi discord prefix of event-guild%play <input> %nl%(`<input>` field has to be either an URL or YouTube search query)
+	trigger:
+		set {_bot} to self member of event-bot in event-guild 
+	#	if voice channel of event-member is not set:
+	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+	#		stop
+	#	else if voice channel of {_bot} is not set:
+		set {_vc} to voice channel of event-member
+		connect event-bot to {_vc}
+	#	else if voice channel of event-member != voice channel of {_bot}:
+	#		reply with "**I am already connected to another voice channel!**"
+	#		stop
+		if arg 1 is not set:
+			reply with ":x: **You __must__ specify an URL or a YouTube input!**"
+			stop
+		search in youtube for arg-1 and store it in {_r::*}
+		if arg-1 contain "list=":
+			if {_r::*} is not set:
+				reply with ":x: **Can't found that playlist!**"
+				stop
+			play {_r::*} in event-guild with event-bot
+			make embed:
+				set author of embed to "Successfully added %size of {_r::*}% tracks to your queue!"
+
+				set color of embed to {@blue}
+				set author url of embed to arg-1
+				set timestamp of embed to now
+				set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+				set footer icon of embed to avatar of event-member
+			reply with last embed
+		else:
+			if {_r::1} is not set:
+				reply with ":x: **Can't found anything for the input '%arg-1%'!**"
+				stop
+			play {_r::1} in event-guild with event-bot
+			set {_track} to {_r::1}
+			make embed:
+				set title of embed to "%{_track}%"
+				set title url of embed to track url of {_track}
+				set color of embed to {@light blue}
+				set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+				set footer icon of embed to avatar of event-member
+				set thumbnail of embed to track thumbnail of {_track}
+				add "`•` Duration: %track duration of {_track}%" to {_l::*}
+				add "`•` Author: %track author of {_track}%" to {_l::*}
+				set description of embed to join {_l::*} with nl
+				set timestamp of embed to now
+			reply with last embed
+
+discord command connect:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%connect
+	aliases: join
+	description: Make me connect to your voice channel
+	category: music
+	trigger:
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+		else if voice channel of {_bot} is not set:
+			connect event-bot to voice channel of event-member
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with "**I am already connected to another voice channel!**"
+
+discord command repeat:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%repeat
+	aliases: loop
+	description: Turn on/off the song looping
+	category: music
+	trigger:
+	#	if voice channel of event-member is not set:
+	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+	#		stop
+	#	else if voice channel of event-member != voice channel of {_bot}:
+	#		reply with "**I am already connected to another voice channel!**"
+	#		stop
+		if bot is repeating in event-guild:
+			set repeating state of event-guild to false
+			set {_name} to "disabled"
+		else:
+			set repeating state of event-guild to true
+			set {_name} to "enabled"
+		reply with ":v: **You have `%{_name}%` the repeating of the queue!**"
+
+discord command skip [<int=1>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%skip <number> %nl%(`<number>` field is default to one)
+	description: Skip a number of songs from the queue
+	category: music
+	trigger:
+	#	if voice channel of event-member is not set:
+	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+	#		stop
+	#	else if voice channel of event-member != voice channel of {_bot}:
+	#		reply with "**I am already connected to another voice channel!**"
+	#		stop
+		set {_single} to true if arg-1 = 1 ? false 
+		loop arg-1 times:
+			skip current track of event-guild and store it in {_track}
+		set {_} to ""
+		set {_} to " Now Playing:" if {_track} is set
+		make embed:
+			set author of embed to "Successfully skipped the current track!%{_}%" if {_single} = true ? "Successfully skipped %arg-1% tracks!%{_}%"
+			if {_track} is set:
+				set title of embed to "%{_track}%"
+				set title url of embed to track url of {_track}
+				set color of embed to {@red}
+				set thumbnail of embed to track thumbnail of {_track}
+				add "`•` Duration: %track duration of {_track}%" to {_l::*}
+				add "`•` Author: %track author of {_track}%" to {_l::*}
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+			set footer icon of embed to avatar of event-member
+			set timestamp of embed to now
+		reply with last embed
+
+discord command stop:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%stop
+	aliases: leave, disconnect
+	description: Stop the queue and make me leave the channel
+	category: music
+	trigger:
+#		if voice channel of event-member is not set:
+#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+#			stop
+#		else if voice channel of event-member != voice channel of {_bot}:
+#			reply with "**I am already connected to another voice channel!**"
+#			stop
+		stop current queue of event-guild
+		disconnect bot of event-guild
+		make embed:
+			set author of embed to "Bye, See you next time 👋"
+			set color of embed to {@red}
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+			set footer icon of embed to avatar of event-member
+			set timestamp of embed to now
+		reply with last embed
+
+discord command pause:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%pause
+	description: Pause the music playback
+	category: music
+	trigger:
+#		if voice channel of event-member is not set:
+#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+#			stop
+#		else if voice channel of event-member != voice channel of {_bot}:
+#			reply with "**I am already connected to another voice channel!**"
+#			stop
+		pause in event-guild
+		react to event-message with reaction "pause_button"
+
+discord command resume:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%resume
+	aliases: unpause
+	description: Unpause the music playback
+	category: music
+	trigger:
+#		if voice channel of event-member is not set:
+#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+#			stop
+#		else if voice channel of event-member != voice channel of {_bot}:
+#			reply with "**I am already connected to another voice channel!**"
+#			stop
+		resume in event-guild
+		react to event-message with reaction "arrow_forward"
+
+discord command nowplaying:
+	prefixes: %Kirumi discord prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%nowplaying
+	aliases: np
+	description: Return all information about the song that is currently playing
+	category: music
+	trigger:
+		set {_track} to track bot is playing in event-guild
+		set {_dur} to track duration of {_track}
+		set {_dur} to toSeconds({_dur})
+		set {_pos} to track position of {_track}
+		set {_pos} to toSeconds({_pos})
+		make embed:
+			set author of embed to "Current track:"
+			set title of embed to "%{_track}%"
+			set title url of embed to track url of {_track}
+			set color of embed to {@light blue}
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+			set footer icon of embed to avatar of event-member
+			set timestamp of embed to now
+			set thumbnail of embed to track thumbnail of {_track}
+			add "**`•` Duration:** %minute time of {_dur}%    **`•` Position:** %minute time of {_pos}%    **`•` Left:** %minute time of ({_dur} - {_pos})%" to {_l::*}
+			add "", "**`•` Author:** %track author of {_track}%" and "" to {_l::*}
+			set {_bar} to progressbar of {_pos} and {_dur} with character ":radio_button:" with length 20
+			add "┃%{_bar}%┃" to {_l::*}
+			set description of embed to join {_l::*} with nl
+		reply with last embed
+
+#discord command volume <number>:
+#    prefixes: -
+#    trigger:
+#        set volume of event-guild to arg-1
+#        reply with "Volume changed to %arg-1%"
+
+discord command queue:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: q
+	usage: %Kirumi discord prefix of event-guild%queue
+	description: List current songs in the queue
+	category: music
+	trigger:
+		if queue of event-guild is not set:
+			reply with ":x: **Cannot found a __queue__ for your current guild!**"
+			stop
+		make embed:
+			set title of embed to "Current Queue:"
+			set color of embed to {@magenta}
+			set {_track} to track bot is playing in event-guild
+			set {_dur} to track duration of {_track}
+			set {_dur} to toSeconds({_dur})
+			set {_pos} to track position of {_track}
+			set {_pos} to toSeconds({_pos})
+			set {_bar} to progressbar of {_pos} and {_dur} with character ":radio_button:" with length 25
+			add "**NOW PLAYING:** %track title of {_track}%", "┃%{_bar}%┃" and "" to {_l::*}
+			set {_i} to 1
+			loop queue of event-guild:
+				if {_i} is not bigger than 15:
+					add "`%{_i}%` :notes: %track title of loop-track%" to {_l::*}
+					set {_dur} to track duration of loop-track
+					set {_dur} to toSeconds({_dur})
+					add {_dur} to {_total}
+					add 1 to {_i}
+				else:
+					add "" and ":heavy_plus_sign: *%(size of queue of event-guild - 15)% positions more in the queue*"  to {_l::*}
+					exit loop
+			add "" and ":clock1: **Total time: %minute time of {_total}%**" to {_l::*}
+			set description of embed to join {_l::*} with nl
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+			set footer icon of embed to avatar of event-member
+			set timestamp of embed to now
+		reply with last embed
+
+#discord command speed [<number>]:
+#	prefixes: %{db_SI::%discord d of event-guild%::prefix}%
+#	trigger:
+#		if arg 1 is not set:
+#			reply with ":cloud_tornado: **Current __speed__: `%speed of event-guild%`**"
+#			stop
+#		set guild speed of event-guild to arg-1
+#		reply with ":cloud_tornado: **The __speed__ has been changed to `%guild speed of event-guild%`!**"
+
+#discord command depth [<number>]:
+#	prefixes: %Kirumi discord prefix of event-guild%
+#	trigger:
+#		if arg 1 is not set:
+#			reply with ":deer: **Current __depth__: `%depth of event-guild%`**"
+#			stop
+#		set depth of event-guild to arg-1
+#		reply with ":deer: **The __depth__ has been changed to `%depth of event-guild%`!**"
+
+#discord command pitch [<number>]:
+#	prefixes: %Kirumi discord prefix of event-guild%
+#	trigger:
+#		if arg 1 is not set:
+#			reply with ":musical_note: **Current __pitch__: `%audio pitch of event-guild%`**"
+#			stop
+#		set depth of event-guild to arg-1
+#		reply with ":musical_note: **The __pitch__ has been changed to `%audio pitch of event-guild%`!**"
+
+on track end:
+	bot is not repeating in event-guild
+	skip current track of event-guild
+	wait 1 minutes
+	if bot is not playing in event-guild:
+		disconnect bot of event-guild
+	
