@@ -1,16 +1,11 @@
-# Copyright 2021  FokaStudio
-
-# Coded by: FokaStudio
-# Original by: <none>
-# Addons required: DiSky, Reqn, skript-json
-# Other plugins: <none>
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
 
 function colorBox() :: string:
 	set {_colors::*} to "red", "orange", "yellow", "green", "blue", "purple"
-	return ":%a random element of {_colors::*}%_square:"
+	return ":%random element of {_colors::*}%_square:"
 
 discord command avatar [<member=%event-member%>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: av, a
 	executable in: guild
 	usage: avatar [<member>]
@@ -34,40 +29,38 @@ discord command avatar [<member=%event-member%>]:
 		reply to event-message with last embed with event-bot
 
 discord command clyde [<text>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
 	category: general
 	description: Make my good friend Clyde say something
 	trigger:
-		set {_arg1} to (arg-1 ? "Include something in the first argument!")
+		set {_arg1} to (arg-1 ? "Include something in the first argument next time!")
 		replace all " " with "%%20" in {_arg1}
 		reply to event-message with "https://ctk-api.herokuapp.com/clyde/%{_arg1}%" with event-bot
 
-discord command whois [<member>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+discord command whois [<member=%event-member%>]:
+	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: userinfo
 	category: general
 	description: Grab info of one of the members of this server
 	trigger:
-		if arg 1 is not set:
-			reply to event-message with ":x: You **must** specify a member!" with event-bot
-			stop
 		make embed:
 			set title of embed to "Who is %discord name of arg-1% ?"
 			add "`•` Username: %discord name of arg 1%" to {_l::*}
 			add "`•` Nick: %discord nick name of arg 1%" to {_l::*}
 			add "`•` Tag: %tag of arg 1%" to {_l::*}
 			add "`•` Mention: %mention tag of arg 1%" to {_l::*}
-			add "`•` Mutual Guilds: %size of mutual guild of arg 1%" to {_l::*}
 			set description of embed to join {_l::*} with nl
 			set thumbnail of embed to avatar of arg-1
 			set footer of embed to "Asked by %discord name of event-member%"
-			set embed color of embed to color of arg-1
+			set {_color} to main color of (image from url discord user avatar of arg-1)
+			set {_color::*} to "%{_color}%" parsed as "color with red %int%, green %int% and blue %int% \(%int%\)"
+			set embed color of embed to skript color from rgb {_color::1}, {_color::2}, {_color::3}
 			set timestamp of embed to now
 		reply to event-message with last embed with event-bot
 
 discord command server [<text>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
 	category: minecraft
 	usage: server <minecraft server>
@@ -75,7 +68,7 @@ discord command server [<text>]:
 	description: Grab all info about any server in a form of a neat embed
 	trigger:
 		if arg-1 is not set:
-			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%{db_SI.prefix::%discord id of event-guild%}%mcserv mc.hypixel.net```" with event-bot
+			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%Kirumi discord prefix of event-guild%mcserv mc.hypixel.net```" with event-bot
 		send http request to "https://api.mcsrvstat.us/2/%arg-1%"
 		set {_server} to last http response
 		set {_server} to {_server}'s body
@@ -87,7 +80,7 @@ discord command server [<text>]:
 			make embed:
 				set embed color of the embed to light red
 				set title of embed to "All info about %arg-1%"
-				set description of the embed to "Not sure what Protocol is? Click on the title%{db_SI.prefix::%discord id of event-guild%}%"
+				set description of the embed to "Not sure what Protocol is? Click on the title%Kirumi discord prefix of event-guild%"
 				add inline field named ":green_circle: Server Status" with value "Online" to fields of embed
 				add inline field named ":pushpin: Online" with value "%{_server::players::online}% / %{_server::players::max}%" to fields of embed
 				add inline field named ":compass: Version" with value "%{_server::version}%" to fields of embed
@@ -110,7 +103,7 @@ discord command server [<text>]:
 			reply to event-message with last embed with event-bot
 
 discord command search [<text>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
 	category: general
 	usage: search <query>
@@ -122,10 +115,10 @@ discord command search [<text>]:
 		reply to event-message with "**Here is all that I found when searching for *%arg-1%***" with event-bot
 		set {_arg} to arg-1
 		replace all " " in {_arg} with "%%20"
-		reply with "https://image.thum.io/get/auth/40904-Kirumi/nomention/https://google.com/search?q=%{_arg}%" with event-bot
+		reply with "https://image.thum.io/get/auth/54133-KirumiTojo/https://google.com/search?q=%{_arg}%" with event-bot
 
 discord command player [<text>]:
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
 	aliases: mcplayer, playerinfo
 	usage: player <player>
@@ -163,3 +156,19 @@ discord command player [<text>]:
 			set the footer of embed to "Requested by %event-user%##%tag of event-user%"
 			set the timestamp of embed to now		
 		reply to event-message with last embed with event-bot
+
+function meme(url: string) :: string:
+    replace all "<" with "&" in {_url}
+    return {_url}
+
+
+discord command meme:
+    prefixes: %Kirumi discord prefix of event-guild%
+    trigger:
+        send a request to meme("https://meme-api.herokuapp.com/gimme/meme") with headers "User-agent: sky_high"
+        map json body of last http response to {_tes::*}
+        make embed:
+            set the description of the embed to "**[%{_tes::title}%](%{_tes::url}%)**"
+            set image of embed to "%{_tes::url}%"
+            set the embed color of the embed to dark blue  
+        reply with last embed with event-bot
