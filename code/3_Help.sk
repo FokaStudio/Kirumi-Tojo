@@ -1,16 +1,12 @@
-# Copyright 2021  FokaStudio
-
-# Coded by: FokaStudio
-# Original by: <none>
-# Addons required: DiSky
-# Other plugins: <none>
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
 
 function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
+	set {_guild} to {_g}
 	set {_g} to discord id of {_g}
 	if {_c} = "none":
 		make embed:
 			set title of embed to "Help"
-			set description of embed to "**I am Kirumi Tojo, the *Ultimate Maid*. Please let me know if you require my service.**%nl%Do `%{db_SI.prefix::%{_g}%}%help <category>` to learn about other commands"
+			set description of embed to "**I am Kirumi Tojo, the *Ultimate Maid*. Please let me know if you require my service.**%nl%Do `%Kirumi discord prefix of {_guild}%help <category>` to learn about other commands"
 			set author of the embed to "Kirumi Tojo"
 			set color of the embed to yellow
 			add inline field named "General" with value "General command category" to fields of embed
@@ -20,6 +16,7 @@ function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
 			add inline field named "Tags" with value "My quick responses if you would wish to ask me anything" to fields of embed
 			add inline field named "Leveling" with value "My leveling features" to fields of embed
 			add inline field named "Minecraft" with value "Some commands related to this famous game..." to fields of embed
+			add inline field named "Music" with value "**NEW!** I have found an unused radio in the closet, maybe it still works...?" to fields of embed
 			set footer of embed to "Requested by %discord name of {_u}%##%tag of {_u}%"
 			set footer icon of embed to discord user avatar of {_u}
 			set timestamp of embed to now
@@ -28,7 +25,7 @@ function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
 		loop all discord commands:
 			if "%loop-value%" = "%{_c::2}%":
 				make embed:
-					add "**%{db_SI.prefix::%{_g}%}%%loop-value%**%nl%%nl%" to {_embed::*}
+					add "**%Kirumi discord prefix of {_guild}%%loop-value%**%nl%%nl%" to {_embed::*}
 					add "*%loop-value's description%*%nl%%nl%" to {_embed::*}
 					add "*`Category:`* __%loop-value's category%__%nl%" to {_embed::*}
 					add "**`Usage:`** __%loop-value's usage%__%nl%" to {_embed::*}
@@ -44,7 +41,7 @@ function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
 		make embed:
 			loop all discord command:
 				if discord command category of loop-value = {_c}:
-					add "**`%{db_SI.prefix::%{_g}%}%%loop-value%`** - *%description of loop-value%*%nl%" to {_embed::*}
+					add "**`%Kirumi discord prefix of {_guild}%%loop-value%`** - *%description of loop-value%*%nl%" to {_embed::*}
 			if size of {_embed::*} != 0:
 				set color of the embed to lime
 				set description of embed to join {_embed::*} with nl
@@ -65,9 +62,9 @@ function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
 discord command help [<string>]:
 	aliases: helpmepls, mayigethelp, heeyadmin
 	category: general
-	usage: %{db_SI.prefix::%discord id of event-guild%}%help [<category|command>]
+	usage: %Kirumi discord prefix of event-guild%help [<category|command>]
 	description: Basic help command. Use it anytime you want
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%, !
+	prefixes: %Kirumi discord prefix of event-guild%, !
 	trigger:
 		make new dropdown with id "helpMessage.%discord id of event-member%.%discord id of event-channel%":
 			set min range of dropdown to 1
@@ -79,11 +76,12 @@ discord command help [<string>]:
 			add new choice with value "help.image" with name "Image" with desc "Let me become your personal make-up artist" with reaction "lipstick" to choices of dropdown
 			add new choice with value "help.leveling" with name "Leveling" with desc "My leveling features" with reaction "sparkles" to choices of dropdown
 			add new choice with value "help.minecraft" with name "Minecraft" with desc "Some commands related to this famous game..." with reaction "green_book" to choices of dropdown
+			add new choice with value "help.music" with name "Music" with desc "**NEW!** I have found an unused radio in the closet, maybe it still works...?" with reaction "notes" to choices of dropdown
 		set {_dropdown} to last dropdown
 		make dropdown {_dropdown} run one time:
 			set {_id::*} to event-dropdown split at "."
 			if AND(check [{_id::2} = discord id of event-member], check [{_id::3} = discord id of event-channel]) = false:
-				reply with personal ":x: **This is not your %{db_SI.prefix::%discord id of event-guild%}%help session!**"
+				reply with personal ":x: **This is not your %Kirumi discord prefix of event-guild%help session!**"
 				stop
 			set {_choice::*} to event-choices
 			set {_page::*} to {_choice::1} split at "."

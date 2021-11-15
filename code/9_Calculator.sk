@@ -8,7 +8,7 @@
 
 options:
 	version: 1.3
-	bot: "bot"
+	bot: "Kirumi"
 
 # > Visual Embed
 function getMemberCalc(m: member) :: embedbuilder:
@@ -48,7 +48,7 @@ function getMemberCalc(m: member) :: embedbuilder:
 
 # > Main command
 discord command calc:
-	prefixes: !
+	prefixes: %Kirumi discord prefix of event-guild%
 	trigger:
 		make embed:
 			set author of embed to "Loading calculator ..."

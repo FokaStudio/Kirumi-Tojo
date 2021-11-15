@@ -1,6 +1,8 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
 discord command popper [<integer = 5>]:
 	category: fun
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	description: Creates a X by X grid of random colored boxes you can click to display
 	usage: popper <integer>, default is **5**
 	aliases: poppers
@@ -18,9 +20,9 @@ discord command popper [<integer = 5>]:
 discord command joke:
 	aliases: jokes, randomjoke
 	category: fun
-	usage: %{db_SI.prefix::%discord id of event-guild%}%joke
+	usage: %Kirumi discord prefix of event-guild%joke
 	description: If you want me to entertain you, I know some jokes
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	trigger:
 		send a request to "https://v2.jokeapi.dev/joke/Miscellaneous,Dark,Spooky,Christmas?lang=en&type=single" with headers "User-agent: Kirumi Tojo"
 		map json body of last http response to {_joke::*}
@@ -29,17 +31,17 @@ discord command joke:
 discord command achievement [<text>]:
 	aliases: advancement
 	category: fun
-	usage: %{db_SI.prefix::%discord id of event-guild%}%achievement <text>
+	usage: %Kirumi discord prefix of event-guild%achievement <text>
 	description: Create an achievement of your desires
-	prefixes: %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: %Kirumi discord prefix of event-guild%
 	trigger:
 		if arg-1 is not set:
-			reply with ":x: **Specify the first argument%{db_SI.prefix::%discord id of event-guild%}%**%nl%*Use `|` to separate title and description%{db_SI.prefix::%discord id of event-guild%}%*"
+			reply with ":x: **Specify the first argument%Kirumi discord prefix of event-guild%**%nl%*Use `|` to separate title and description%Kirumi discord prefix of event-guild%*"
 		else:
 			set {_misc} to arg
 			replace all " " with "%%20" in {_misc}
 			set {_arg::*} to {_misc} split at "|"
 			if {_arg::2} is not set:
-				reply with ":x: **Use `|` to separate title and description%{db_SI.prefix::%discord id of event-guild%}%**" with event-bot
+				reply with ":x: **Use `|` to separate title and description%Kirumi discord prefix of event-guild%**" with event-bot
 				stop
 			reply to event-message with "https://minecraftskinstealer.com/achievement/%random integer between 1 and 39%/%{_arg::1}%/%{_arg::2}%" with event-bot

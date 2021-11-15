@@ -1,3 +1,5 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
 # Utility, returns a color for the embed based on input
 function kirumiColor(s: string) :: color:
 	switch {_s}:
@@ -35,6 +37,56 @@ effect do nothing:
 	trigger:
 		stop
 
+effect [disky] multi react to [the] [message] %message% with [emotes] %objects%:
+	trigger:
+		set {_emotes::*} to expr-2
+		loop {_emotes::*}:
+			react to expr-1 with reaction loop-value
+
+expression [my]sql:
+	get:
+		return {-sql}
+
+expression [Kirumi] current version:
+	return type: string 
+	get:
+		return "1.2a"
+
+guild property config file:
+	return type: string
+	get:
+		return "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+
+guild property [Kirumi] [discord] prefix:
+	return type: string
+	get:
+		return value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+
+guild property audit[( |-)]channel:
+	return type: string
+	get:
+		return value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+	delete:
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
+
+guild property suggestion[[s](-| )]channel:
+	return type: string
+	get:
+		return value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+	delete:
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
+
+expression kirumi(-| )default:
+	return type: string
+	get:
+		return "000000000000000000"
+
 function AND(conditions: booleans) :: boolean:
 	if {_conditions::*} contains false:
 		return false
@@ -47,15 +99,15 @@ function OR(conditions: booleans) :: boolean:
 
 # Login, startup message and some setup
 init:
-	create section stored in {_section}:
+	create section stored in {_init}:
 		clear {internal.status::*}
 		set {internal.status::1::text} to "cleaning the config files"
 		set {internal.status::1::type} to "playing"
-		set {internal.status::2::text} to "%{guild.count}% servers I serve at"
+		set {internal.status::2::text} to "%{guild_count}% servers I serve at"
 		set {internal.status::2::type} to "watching"
 		set {internal.status::3::text} to "to your commands"
 		set {internal.status::3::type} to "listening"
-	run section {_section} async and wait
+	run section {_init} async
 	if "Kirumi" is loaded:
 		shutdown bot named "Kirumi"
 	make new discord bot:
@@ -63,7 +115,8 @@ init:
 		login to "REDACTED" with name "Kirumi"
 	wait 1 seconds
 	set discord online status of bot named "Kirumi" to online
-	create section stored in {_loop}:
+	set {-sql} to the database "mysql://localhost:3306/REDACTED"
+	create section with {guild.count} stored in {_loop}:
 		set {_id} to random integer between 1 and 3
 		set {_text} to {internal.status::%{_id}%::text}
 		set {_type} to {internal.status::%{_id}%::type}
@@ -89,13 +142,13 @@ discord command log <text> <text>:
 		Kirumi log arg-2 as arg-1 in guild event-guild
 
 on text channel delete:
-	if discord id of event-textchannel = {db_SI.audit_channel::%discord id of event-guild%}:
-		delete {db_SI.audit_channel::%discord id of event-guild%}
+	if discord id of event-textchannel = auditchannel of event-guild:
+		delete auditchannel of event-guild
 
 # Basically making Kirumi say a desired line of yours
 discord command announce <text>:
 	permissions: manage server
-	prefixes: !
+	prefixes: %Kirumi discord prefix of event-guild%
 	usage: !announce <message>
 	category: moderation
 	description: <STAFF> Make me help you with making announcements (accepts formatting codes that are accesible only to bots, such as [link](URL))
@@ -105,42 +158,56 @@ discord command announce <text>:
 
 discord command prefix <text>:
 	permissions: manage server
-	prefixes: !, %{db_SI.prefix::%discord id of event-guild%}%
+	prefixes: !, %Kirumi discord prefix of event-guild%
 	description: <STAFF> Set my prefix for commands
 	category: Utility
 	usage: !prefix <new prefix>
 	trigger:
 		set {_arg} to arg-1
-		if {_arg} = {db_SI.prefix::%discord id of event-guild%}:
+		if {_arg} = Kirumi discord prefix of event-guild:
 			reply with ":x: **My new prefix can't be my old prefix!**"
 		else:
 			replace all """" in {_arg} with ""
-			set {db_SI.prefix::%discord id of event-guild%} to {_arg}
+			set Kirumi discord prefix of event-guild to {_arg}
 			reply with ":white_check_mark: **Succesfully changed my prefix!**"
 
 on bot join:
 	if event-bot = Kirumi:
 		add 1 to {guild_count}
-		set {db_SI.prefix::%discord id of event-guild%} to "!"
-		set {db_SI.%discord id of event-guild%::expconfig::required::1} to 200
-		set {db_SI.%discord id of event-guild%::expconfig::multiplier} to 1.5
-		set {db_SI.%discord id of event-guild%::expconfig::chance} to 50
-		set {db_SI.%discord id of event-guild%::expconfig::min} to 5
-		set {db_SI.%discord id of event-guild%::expconfig::max} to 25
+		set value "prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "!!"
+		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
 
 on bot leave:
 	if event-bot = Kirumi:
 		remove 1 from {guild_count}
 		if {guild_count} < 0:
 			set {guild_count} to 0
-		clear {db_SI.%discord id of event-guild%::*}
-		clear {tags::%discord id of event-guild%::*}
-		clear {tag::%discord id of event-guild%::*}
-		delete {db_SI.suggestion_channel::%discord id of event-guild%}
-		delete {db_SI.prefix::%discord id of event-guild%}
+		delete file path "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+		execute "DELETE FROM levels WHERE guild_id = %discord id of event-guild%" in {-sql}
 
 on message receive:
-	set {_m::*} to mentioned members of event-message
-	set {_sm} to self member of Kirumi in event-guild
-	if {_m::*} contains {_sm}:
-		reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %{db_SI.prefix::%discord id of event-guild%}%**%nl%Do __*%{db_SI.prefix::%discord id of event-guild%}%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio" with event-bot
+	if author of event-message is not a bot:
+		set {_m::*} to mentioned members of event-message
+		set {_sm} to self member of Kirumi in event-guild
+		if {_m::*} contains {_sm}:
+			set {_content} to content of event-message
+			set {_mention} to join "%mention tag of {_sm}%" and " "
+			if length of {_content} = length of {_mention}:
+				reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %Kirumi discord prefix of event-guild%**%nl%Do __*%Kirumi discord prefix of event-guild%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio" with event-bot
+
+#discord command ping:
+#	prefixes: prefix of event-guild
+#	trigger:
+#		make embed:
+#			set title of embed to "BOT NAME's Information:"
+#			add "`•` Uptime: %uptime of bot named ""Kirumi""%" to {_l::*}
+#			add "`•` Ping: %ping of bot named ""Kirumi""%ms" to {_l::*}
+#			set description of embed to join {_l::*} with nl
+#			set color of embed to color from rgb 255, 32, 65
+#			set footer of embed to "Asked by %discord name of event-member%"
+#			set timestamp of embed to now
+#		reply with last embed
+#
+#on disky command:
