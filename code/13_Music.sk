@@ -231,10 +231,10 @@ discord command nowplaying:
 		reply with last embed
 
 #discord command volume <number>:
-#    prefixes: -
-#    trigger:
-#        set volume of event-guild to arg-1
-#        reply with "Volume changed to %arg-1%"
+#	prefixes: !!
+#	trigger:
+#		set volume of event-guild to arg-1
+#		reply with "Volume changed to %arg-1%"
 
 discord command queue:
 	prefixes: %Kirumi discord prefix of event-guild%
@@ -307,4 +307,8 @@ on track end:
 	wait 1 minutes
 	if bot is not playing in event-guild:
 		disconnect bot of event-guild
-	
+
+on voice leave:
+	wait 1 minute
+	if size of members in event-voicechannel = 0:
+		disconnect bot of event-guild

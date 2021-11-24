@@ -1,0 +1,70 @@
+#!! Effects
+
+effect do nothing:
+	trigger:
+		stop
+
+#!! Expressions
+
+expression [my]sql:
+	get:
+		return {-sql}
+
+expression Kirumi:
+	return type: bot
+	get:
+		return bot named "Kirumi"
+
+expression [Kirumi] current version:
+	return type: string 
+	get:
+		return "1.2a"
+
+expression kirumi(-| )default:
+	return type: string
+	get:
+		return "000000000000000000"
+
+#!! Properties of guilds
+
+guild property config file:
+	return type: string
+	get:
+		return "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+
+guild property [Kirumi] [discord] prefix:
+	return type: string
+	get:
+		return value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+
+guild property audit[( |-)]channel:
+	return type: string
+	get:
+		return value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+	delete:
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
+
+guild property suggestion[[s](-| )]channel:
+	return type: string
+	get:
+		return value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+	delete:
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
+
+#!! Functions
+
+function AND(conditions: booleans) :: boolean:
+	if {_conditions::*} contains false:
+		return false
+	return true
+	
+function OR(conditions: booleans) :: boolean:
+	if {_conditions::*} contains true:
+		return true
+	return false

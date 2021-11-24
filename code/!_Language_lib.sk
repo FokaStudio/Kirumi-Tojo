@@ -1,0 +1,8 @@
+#!! Language key
+
+guild property translat(e[d]|ion key) %string%:
+	return type: string
+	get:
+		set {_lang} to value "language_key" of "plugins/DiscordData/server_info/%discord id of expr-1%.json"
+		set {_string} to value "%expr-1%" of "plugins/DiscordData/languages/%{_lang}%.json"
+		return {_string}

@@ -14,11 +14,6 @@ function kirumiColor(s: string) :: color:
 		case "other" or "?":
 			return lime
 
-expression Kirumi:
-	return type: bot
-	get:
-		return bot named "Kirumi"
-
 # Effect to log smth to #audit-logs
 effect [Kirumi] log %string% as %string% in [guild] %guild%:
 	trigger:
@@ -32,70 +27,6 @@ effect [Kirumi] log %string% as %string% in [guild] %guild%:
 				set footer of the embed to "Kirumi Tojo"
 				set color of the embed to kirumiColor(expr-2)
 			send last embed to text channel with id {db_SI.audit_channel::%discord id of expr-3%}
-
-effect do nothing:
-	trigger:
-		stop
-
-effect [disky] multi react to [the] [message] %message% with [emotes] %objects%:
-	trigger:
-		set {_emotes::*} to expr-2
-		loop {_emotes::*}:
-			react to expr-1 with reaction loop-value
-
-expression [my]sql:
-	get:
-		return {-sql}
-
-expression [Kirumi] current version:
-	return type: string 
-	get:
-		return "1.2a"
-
-guild property config file:
-	return type: string
-	get:
-		return "plugins/DiscordData/server_data/%discord id of expr-1%.json"
-
-guild property [Kirumi] [discord] prefix:
-	return type: string
-	get:
-		return value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
-	set:
-		set value "prefix" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
-
-guild property audit[( |-)]channel:
-	return type: string
-	get:
-		return value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
-	set:
-		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
-	delete:
-		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
-
-guild property suggestion[[s](-| )]channel:
-	return type: string
-	get:
-		return value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
-	set:
-		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
-	delete:
-		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
-
-expression kirumi(-| )default:
-	return type: string
-	get:
-		return "000000000000000000"
-
-function AND(conditions: booleans) :: boolean:
-	if {_conditions::*} contains false:
-		return false
-	return true
-	
-function OR(conditions: booleans) :: boolean:
-	if {_conditions::*} contains true:
-		return true
-	return false
 
 # Login, startup message and some setup
 init:

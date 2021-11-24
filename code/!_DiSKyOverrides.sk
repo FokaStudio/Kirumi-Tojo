@@ -1,0 +1,7 @@
+#!! Effects
+
+effect [disky] multi react to [the] [message] %message% with [emotes] %objects%:
+	trigger:
+		set {_emotes::*} to expr-2
+		loop {_emotes::*}:
+			react to expr-1 with reaction loop-value

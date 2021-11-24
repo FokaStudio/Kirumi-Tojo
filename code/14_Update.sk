@@ -4,7 +4,9 @@ on disky command:
 	set {_ver} to Kirumi current version
 	set {_ver.serv} to value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
 	set {_ver.serv} to "unknown" if {_ver.serv} is not set
-	if OR(check ["1.2a" != {_ver.serv}], check [{_ver.serv} = "unknown"]) = true:
+	if {_ver.serv} = "1.2a":
+		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
+	else if {_ver.serv} < 6:
 		cancel event
 		reply to event-message with "**OH SNAP!**%nl%*I have encountered a problem!*%nl%In latest version, my database system has switched to **MySQL** and **JSON**, rather than **YAML**!%nl%This causes all commands to malfunction!%nl%But stay calm, as I am about to clean up all those `.yml` files and put them into `MySQL` tables!%nl%%nl%```%nl%Proceeding with update...%nl%```" with event-bot and store it in {_msg}
 		wait 10 seconds
