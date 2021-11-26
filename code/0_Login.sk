@@ -106,19 +106,20 @@ discord command prefix [<text>]:
 
 on bot join:
 	if event-bot = Kirumi:
-		add 1 to {guild_count}
 		set value "prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "!!"
 		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
 		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
 		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "language" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "en_us"
+		set value "tag_prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**"
 
 on bot leave:
 	if event-bot = Kirumi:
-		remove 1 from {guild_count}
-		if {guild_count} < 0:
-			set {guild_count} to 0
 		delete file path "plugins/DiscordData/server_data/%discord id of event-guild%.json"
 		execute "DELETE FROM levels WHERE guild_id = %discord id of event-guild%" in {-sql}
+
+every 15 minutes:
+	set {guild_count} to size of guilds of bot named "Kirumi"
 
 on message receive:
 	if author of event-message is not a bot:
