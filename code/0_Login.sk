@@ -127,8 +127,9 @@ on message receive:
 		if {_m::*} contains {_sm}:
 			set {_content} to content of event-message
 			set {_mention} to join "%mention tag of {_sm}%" and " "
-			if length of {_content} = length of {_mention}:
-				reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %Kirumi discord prefix of event-guild%**%nl%Do __*%Kirumi discord prefix of event-guild%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio" with event-bot
+			set {_mention2} to mention tag of {_sm}
+			if OR(check [length of {_content} = length of {_mention}], check [length of {_content} = length of {_mention2}]):
+				reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %Kirumi discord prefix of event-guild%**%nl%Do __*%Kirumi discord prefix of event-guild%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio%nl%https://discord.gg/J6guYAySN8" with event-bot
 
 #discord command ping:
 #	prefixes: prefix of event-guild
