@@ -85,20 +85,24 @@ discord command announce [<text>]:
 			wait 7 seconds
 			destroy discord entity {_msg}
 
-discord command prefix <text>:
+discord command prefix [<text>]:
 	permissions: manage server
-	prefixes: !, %Kirumi discord prefix of event-guild%
+	prefixes: !!, %Kirumi discord prefix of event-guild%
 	description: <STAFF> Set my prefix for commands
 	category: Utility
-	usage: !prefix <new prefix>
+	usage: %Kirumi discord prefix of event-guild%prefix <new prefix>%nl%*(this command will always respond to default prefix)*
 	trigger:
+		if arg-1 is not set:
+			stop
 		set {_arg} to arg-1
 		if {_arg} = Kirumi discord prefix of event-guild:
-			reply with ":x: **My new prefix can't be my old prefix!**"
+			set {_mess::1} to ":x: **My new prefix can't be my old prefix!**"
 		else:
 			replace all """" in {_arg} with ""
 			set Kirumi discord prefix of event-guild to {_arg}
-			reply with ":white_check_mark: **Succesfully changed my prefix!**"
+			set {_mess::1} to ":white_check_mark: **Succesfully changed my prefix!**"
+		chance of 50%:
+			set {_mess::2} to "<:reply:906517020651171860> **TIP:** If you want to set my prefix to something containing a space bar *(e.g. `kirumi `)*"
 
 on bot join:
 	if event-bot = Kirumi:
