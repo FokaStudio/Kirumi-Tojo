@@ -62,16 +62,6 @@ init:
 		run section {_loop} async and wait
 		wait 15 minutes
 
-# Force smth to log into the audit log channel
-discord command log <text> <text>:
-	permissions: manage server
-	prefixes: !
-	usage: !log <error|warn|info|moderation|other> <message>
-	category: moderation
-	description: <STAFF> Log a message into your guild's log channel (if it exists)
-	trigger:
-		Kirumi log arg-2 as arg-1 in guild event-guild
-
 on text channel delete:
 	if discord id of event-textchannel = auditchannel of event-guild:
 		delete auditchannel of event-guild
