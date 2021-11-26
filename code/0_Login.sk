@@ -145,4 +145,3 @@ on message receive:
 #			set timestamp of embed to now
 #		reply with last embed
 #
-#on disky command:
