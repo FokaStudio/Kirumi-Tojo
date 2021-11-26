@@ -35,15 +35,14 @@ discord command play [<string>]:
 	usage: %Kirumi discord prefix of event-guild%play <input> %nl%(`<input>` field has to be either an URL or YouTube search query)
 	trigger:
 		set {_bot} to self member of event-bot in event-guild 
-	#	if voice channel of event-member is not set:
-	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-	#		stop
-	#	else if voice channel of {_bot} is not set:
-		set {_vc} to voice channel of event-member
-		connect event-bot to {_vc}
-	#	else if voice channel of event-member != voice channel of {_bot}:
-	#		reply with "**I am already connected to another voice channel!**"
-	#		stop
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			connect event-bot to voice channel of event-member
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with "**I am already connected to another voice channel!**"
+			stop
 		if arg 1 is not set:
 			reply with ":x: **You __must__ specify an URL or a YouTube input!**"
 			stop
@@ -103,12 +102,16 @@ discord command repeat:
 	description: Turn on/off the song looping
 	category: music
 	trigger:
-	#	if voice channel of event-member is not set:
-	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-	#		stop
-	#	else if voice channel of event-member != voice channel of {_bot}:
-	#		reply with "**I am already connected to another voice channel!**"
-	#		stop
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			reply with ":x: **I am not in a voice channel! Use `%Kirumi prefix of event-guild%connect` to make me join you!**"
+			stop
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
+			stop
 		if bot is repeating in event-guild:
 			set repeating state of event-guild to false
 			set {_name} to "disabled"
@@ -123,12 +126,19 @@ discord command skip [<int=1>]:
 	description: Skip a number of songs from the queue
 	category: music
 	trigger:
-	#	if voice channel of event-member is not set:
-	#		reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-	#		stop
-	#	else if voice channel of event-member != voice channel of {_bot}:
-	#		reply with "**I am already connected to another voice channel!**"
-	#		stop
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			reply with ":x: **I am not in a voice channel! Use `%Kirumi prefix of event-guild%connect` to make me join you!**"
+			stop
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if bot is not playing in event-guild:
+			reply with ":x: **I am not playing anything currently!**"
+			stop
 		set {_single} to true if arg-1 = 1 ? false 
 		loop arg-1 times:
 			skip current track of event-guild and store it in {_track}
@@ -155,12 +165,16 @@ discord command stop:
 	description: Stop the queue and make me leave the channel
 	category: music
 	trigger:
-#		if voice channel of event-member is not set:
-#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-#			stop
-#		else if voice channel of event-member != voice channel of {_bot}:
-#			reply with "**I am already connected to another voice channel!**"
-#			stop
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			reply with ":x: **I am not in a voice channel! Use `%Kirumi prefix of event-guild%connect` to make me join you!**"
+			stop
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
 		stop current queue of event-guild
 		disconnect bot of event-guild
 		make embed:
@@ -177,12 +191,16 @@ discord command pause:
 	description: Pause the music playback
 	category: music
 	trigger:
-#		if voice channel of event-member is not set:
-#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-#			stop
-#		else if voice channel of event-member != voice channel of {_bot}:
-#			reply with "**I am already connected to another voice channel!**"
-#			stop
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			reply with ":x: **I am not in a voice channel! Use `%Kirumi prefix of event-guild%connect` to make me join you!**"
+			stop
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
 		pause in event-guild
 		react to event-message with reaction "pause_button"
 
@@ -193,12 +211,16 @@ discord command resume:
 	description: Unpause the music playback
 	category: music
 	trigger:
-#		if voice channel of event-member is not set:
-#			reply with ":x: **You __must__ be in a voice channel in order to join you!**"
-#			stop
-#		else if voice channel of event-member != voice channel of {_bot}:
-#			reply with "**I am already connected to another voice channel!**"
-#			stop
+		set {_bot} to self member of event-bot in event-guild 
+		if voice channel of event-member is not set:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
+		else if voice channel of {_bot} is not set:
+			reply with ":x: **I am not in a voice channel! Use `%Kirumi prefix of event-guild%connect` to make me join you!**"
+			stop
+		else if voice channel of event-member != voice channel of {_bot}:
+			reply with ":x: **You __must__ be in a voice channel in order to use this command!**"
+			stop
 		resume in event-guild
 		react to event-message with reaction "arrow_forward"
 
