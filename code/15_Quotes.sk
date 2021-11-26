@@ -1,20 +1,32 @@
 on message receive:
-    # We get the content of message
-    set {_content} to message content of event-message
-    # Verify if it contain discord's jump URL base ...
-    {_content} contains "https://discord.com/channels/"
-    # ... and replace it to only get IDs
-    replace all "https://discord.com/channels/" with "" in {_content}
-    # We get things like '818182471140114432/818182471677247527/822533241784369223'
-    # First is the guild id, second the channel id and latest is the message id.
-    set {_var::*} to split {_content} at "/"
-    # We verify if the guild the message come from is equal to the event-guild
-    discord id of event-guild is {_var::1}
-    # Then we get the message's content and reply it via an embed
-    set {_msg} to message with id {_var::3} in channel with id {_var::2}
-    make embed:
-        set title of embed to "Quote from %discord name of author of {_msg}%:"
-        set description of embed to "\`\`\`%message content of {_msg}%\`\`\"
-        set footer of embed to "Link usage available in ##examples"
-        set color of embed to orange
-    reply with last created embed
+	set {_content} to content of event-message
+	{_content} contains "https://discord.com/channels/", "https://canary.discord.com/channels/" or "https://ptb.discord.com/channels/"
+	set {_content::*} to {_content} split at " "
+	loop {_content::*}:
+		if loop-value contains "https://discord.com/channels/", "https://canary.discord.com/channels/" or "https://ptb.discord.com/channels/":
+			set {_content} to loop-value
+			exit loop
+	set {_url} to {_content}
+	replace all "https://discord.com/channels/", "https://canary.discord.com/channels/" and "https://ptb.discord.com/channels/" with "" in {_content}
+	set {_quote::*} to split {_content} at "/"
+	discord id of event-guild is {_quote::1}
+	retrieve message from id {_quote::3} in channel with id {_quote::2} and store it in {_msg}
+	set {_em::*} to embeds of {_msg}
+	make embed:
+		set {_author} to member author of {_msg}
+		set thumbnail of embed to "https://cdn.discordapp.com/emojis/913502011293581342.png?size=1024"
+		set {_em} to ""
+		if {_em::1} is set:
+			set {_em} to "%nl%:heavy_plus_sign: *Contains embed(s), posting them as well*"
+		add field named "Here's what they said:" with value "%{_msg}%%{_em}%" to embed
+		add field named "Jump!" with value "Click [here](%{_url}%) to jump to the message" to embed
+		set color of embed to skript color from rgb 0, 170, 255
+		set footer of embed to "Requested by %discord name of event-member%##%tag of event-member%"
+		set footer icon of embed to discord user avatar of event-member
+		set author of embed to "Quote from %{_author}%:"
+		set author icon of embed to discord user avatar of {_author}
+		set timestamp of embed to now
+	reply with last embed
+	loop {_em::*}:
+		set embed color of loop-value to red
+		reply with loop-value
