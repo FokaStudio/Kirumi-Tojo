@@ -39,13 +39,16 @@ init:
 		set {internal.status::3::text} to "to your commands"
 		set {internal.status::3::type} to "listening"
 	run section {_init} async
-	if "Kirumi" is loaded:
-		shutdown bot named "Kirumi"
+#! Had some issues
+#	if "Kirumi" is loaded on discord:
+#		shutdown the bot (bot named "Kirumi")
+#	wait 1 seconds
 	make new discord bot:
 		enable all default intent
 		login to "REDACTED" with name "Kirumi"
 	wait 1 seconds
-	set discord online status of bot named "Kirumi" to online
+#!  Has some issues too
+#	set discord online status of bot named "Kirumi" to online
 	set {-sql} to the database "mysql://localhost:3306/REDACTED"
 	create section with {guild.count} stored in {_loop}:
 		set {_id} to random integer between 1 and 3
@@ -58,7 +61,7 @@ init:
 				set presence of bot named "Kirumi" to listening "%{_text}%"
 			case "watching":
 				set presence of bot named "Kirumi" to watching "%{_text}%"
-	while "Kirumi" is loaded:
+	while "Kirumi" is loaded on discord:
 		run section {_loop} async and wait
 		wait 15 minutes
 
