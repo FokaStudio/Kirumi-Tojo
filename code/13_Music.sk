@@ -309,6 +309,12 @@ on track end:
 		disconnect bot of event-guild
 
 on voice leave:
-	wait 1 minute
-	if size of members in event-voicechannel = 0:
-		disconnect bot of event-guild
+	set {_sm} to self member of bot named "Kirumi" in event-guild
+	if event-member != {_sm}:
+		wait 1 minute
+		event-voicechannel = voice channel of {_sm}
+		set {_members::*} to audio members of event-voicechannel
+		if OR(check [size of {_members::*} = 1], check [{_members::1} is not set]) = true: #!! Seconds check is just in case smth goes wrong
+			disconnect bot of event-guild
+	else:
+		stop current queue of event-guild
