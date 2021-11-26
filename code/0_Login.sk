@@ -67,15 +67,20 @@ on text channel delete:
 		delete auditchannel of event-guild
 
 # Basically making Kirumi say a desired line of yours
-discord command announce <text>:
+discord command announce [<text>]:
 	permissions: manage server
 	prefixes: %Kirumi discord prefix of event-guild%
-	usage: !announce <message>
+	usage: %Kirumi discord prefix of event-guild%announce <message>
 	category: moderation
 	description: <STAFF> Make me help you with making announcements (accepts formatting codes that are accesible only to bots, such as [link](URL))
 	trigger:
 		destroy discord entity event-message
-		reply with arg-1
+		if arg-1 is set:
+			reply with arg-1
+		else:
+			reply with "*This is an example message!**%nl%```applescript%nl%1 | ""Codeblock!""%nl%```%nl%[fancy URL formatting](https://example.com)" and store it in {_msg}
+			wait 7 seconds
+			destroy discord entity {_msg}
 
 discord command prefix <text>:
 	permissions: manage server
