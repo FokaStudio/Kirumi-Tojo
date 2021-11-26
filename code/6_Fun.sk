@@ -7,7 +7,10 @@ discord command popper [<integer = 5>]:
 	usage: popper <integer>, default is **5**
 	aliases: poppers
 	trigger:
-		loop arg-1 times:
+		set {_arg} to arg-1
+		if {_arg}  > 9:
+			set {_arg} to 9
+		loop {_arg} times:
 			if {_m} is set:
 				set {_m} to "%{_m}%%nl%"
 			loop arg-1 times:
