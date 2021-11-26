@@ -157,18 +157,55 @@ discord command player [<text>]:
 			set the timestamp of embed to now		
 		reply to event-message with last embed with event-bot
 
-function meme(url: string) :: string:
-    replace all "<" with "&" in {_url}
-    return {_url}
+function meme(subreddit: string) :: string:
+	switch {_subreddit}:
+		case "meme":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/meme"
+		case "comedycemetery":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/comedycemetery"
+		case "wholesomememes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/wholesomememes"
+		case "memes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/memes"
+		case "terriblefacebookmemes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/terriblefacebookmemes"
+		case "dankmemes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/dankmemes"
+	replace all "<" with "&" in {_url}
+	return {_url}
 
-
-discord command meme:
-    prefixes: %Kirumi discord prefix of event-guild%
-    trigger:
-        send a request to meme("https://meme-api.herokuapp.com/gimme/meme") with headers "User-agent: sky_high"
-        map json body of last http response to {_tes::*}
-        make embed:
-            set the description of the embed to "**[%{_tes::title}%](%{_tes::url}%)**"
-            set image of embed to "%{_tes::url}%"
-            set the embed color of the embed to dark blue  
-        reply with last embed with event-bot
+discord command meme [<string>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	category: fun
+	description: Get a meme from a given Subreddit
+	usage: %Kirumi discord prefix of event-guild%meme <subreddit>%nl%`<subreddit>` accepts entries like `memes`, `dankmemes`, `wholesomememes`, `meme`, `terriblefacebookmemes` and `comedycemetery` 
+	trigger:
+		if arg-1 is set:
+			if arg-1 != "memes", "dankmemes", "wholesomememes", "meme", "terriblefacebookmemes" or "comedycemetery":
+				reply with ":x: **This is not a supported Subreddit!%nl%<:reply:906517020651171860>Do `%Kirumi prefix of event-guild%help meme` for a full list of supported subreddits**"
+				stop
+			set {sr} to arg-1
+		else:
+			set {sr} to random element out of "memes", "dankmemes" and "meme"
+		broadcast meme({sr}) in world("world")
+		send a request to meme({sr}) with headers "User-agent: sky_high"
+		map json body of last http response to {_meme::*}
+		if {_meme::nsfw} = "true":
+			while {_meme::nsfw} = "true":
+				send a request to meme({sr}) with headers "User-agent: sky_high"
+				map json body of last http response to {_meme::*}
+				wait 1 second
+		make embed:
+			set author of the embed to "%{_meme::author}% • r/%{_meme::subreddit}%"
+			set author url of the embed to "https://reddit.com/r/%{_meme::subreddit}%/"
+			set title of the embed to "%{_meme::title}%"
+			set title url of the embed to "%{_meme::url}%"
+			set image of embed to "%{_meme::url}%"
+			set timestamp of embed to now
+			set footer of embed to "👍%{_meme::ups}% total upvotes"
+			set {_red} to random integer between 1 to 255
+			set {_green} to random integer between 1 to 255
+			set {_blue} to random integer between 1 to 255
+			set embed color of the embed to skript color from rgb {_red}, {_green}, {_blue}
+		reply with last embed
+		delete {sr}
