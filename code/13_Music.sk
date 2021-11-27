@@ -27,6 +27,93 @@ function toSeconds(time: timespan) :: number:
 	broadcast "%((unix timestamp of now) - (unix timestamp of ({_time} ago)))%"
 	return (((unix timestamp of now) - (unix timestamp of ({_time} ago)))/1000)
 
+discord command favorite:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: favourite, fav
+	description: :new: Favorite a track and use it for quick-play later on
+	category: music
+	usage: %Kirumi discord prefix of event-guild%favorite
+	trigger:
+		set {_bot} to self member of bot named "Kirumi" in event-guild
+		if voice channel of {_bot} is not set:
+			reply with ":x: **I am not connected to a voice channel!**"
+			stop
+		else if bot is playing in event-guild:
+			set {_tracks::*} to values "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" where [input is not ""]
+			if size of {_tracks::*} < 3:
+				set {_track} to track bot is playing in event-guild
+				set {_track.url} to track url of {_track}
+				if {_tracks::*} contains {_track.url}:
+					reply to event-message with ":x: **You have already favorited that track!**" with event-bot
+					stop
+				set {_tracks.toadd::*} to {_tracks::*}
+				if {_tracks.toadd::1} is not set:
+					set {_tracks.toadd::1} to {_track.url}
+				else:
+					set {_tracks.toadd::*} to {_tracks::*} and {_track.url}
+				set value "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" to {_tracks.toadd::*}
+				make embed:
+					set title of embed to "⭐Added %{_track}% to your favorite list!"
+					set title url of embed to track url of {_track}
+					set color of embed to {@magenta}
+					set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+					set footer icon of embed to avatar of event-member
+					set timestamp of embed to now
+					set thumbnail of embed to track thumbnail of {_track}
+					set description of embed to ":star: This track has been added to your `Favorites`!"
+				reply to event-message with last embed with event-bot
+			else:
+				reply to event-message with ":x: **You can have max 3 favorited tracks!**" with event-bot
+		else:
+			reply to event-message with ":x: **I am not playing anything! You have to play a track in order for me to favorite it!**" with event-bot
+
+discord command unfavorite [<int>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: favourite
+	aliases: unfav
+	description: :new: Unfavorite a track *(that one is pretty self-explanatory)*
+	category: music
+	usage: %Kirumi discord prefix of event-guild%favorite
+	trigger:
+		set {_bot} to self member of bot named "Kirumi" in event-guild
+		set {_tracks::*} to values "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" where [input is not ""]
+		if size of {_tracks::*} > 0:
+			if {_tracks::%arg-1%} is not set:
+				reply to event-message with ":x: **You don't have a favorited track with that ID associated!**" with event-bot
+			else:
+				loop {_tracks::*}:
+					if loop-value = {_tracks::%arg-1%}:
+						continue
+					add loop-value to {_newtracks::*}
+				set {_newtracks::*} to "" if {_newtracks::1} is not set
+				set value "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" to {_newtracks::*}
+				reply to event-message with ":star: **Track removed from your favorites!**" with event-bot
+		else:
+			reply to event-message with ":x: **You don't have any favorited tracks!**" with event-bot
+
+discord command favorites [<member=%event-member%>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: favourite, favs
+	description: :new: List favorite tracks of a specified user
+	category: music
+	usage: %Kirumi discord prefix of event-guild%favorite
+	trigger:
+		set {_tracks::*} to values "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of arg-1%.json" where [input is not ""]
+		if {_tracks::1} is not set:
+			reply to event-message with ":x: **This user has no favorited tracks!**" with event-bot
+		else:
+			make embed:
+				set title of embed to "⭐%arg-1%'s Favorite Tracks"
+				set color of embed to {@magenta}
+				set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+				set footer icon of embed to avatar of event-member
+				set timestamp of embed to now
+				loop {_tracks::*}:
+					search youtube for loop-value and store it in {_r::*}
+					add "%loop-index% - [%{_r::1}%](%track url of {_r::1}%)" to {_d::*}
+				set description of embed to join {_d::*} with nl
+			reply to event-message with last embed with event-bot
+
 discord command play [<string>]:
 	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: p
@@ -46,7 +133,21 @@ discord command play [<string>]:
 		if arg 1 is not set:
 			reply with ":x: **You __must__ specify an URL or a YouTube input!**"
 			stop
-		search in youtube for arg-1 and store it in {_r::*}
+		set {_i} to 0
+		loop "f:", "fav:", "favorite:" and "favourite:":
+			add 1 to {_i}
+			if first index of loop-value in arg-1 = 1:
+				set {_fav::%{_i}%} to true
+		if {_fav::*} contains true:
+			set {_query::*} to arg-1 parsed as "%text%:%int%"
+			set {_tracks::*} to values "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" where [input is not ""]
+			if {_tracks::%{_query::2}%} is not set:
+				reply to event-message with ":x: **You don't have a favorited track with that ID associated!**" with event-bot
+				stop
+			set {_query} to {_tracks::%{_query::2}%}
+		else:
+			set {_query} to arg-1
+		search in youtube for {_query} and store it in {_r::*}
 		if arg-1 contain "list=":
 			if {_r::*} is not set:
 				reply with ":x: **Can't found that playlist!**"
