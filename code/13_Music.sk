@@ -437,7 +437,7 @@ on voice leave:
 		wait 1 minute
 		event-voicechannel = voice channel of {_sm}
 		set {_members::*} to audio members of event-voicechannel
-		if OR(check [size of {_members::*} = 1], check [{_members::1} is not set]) = true: #!! Seconds check is just in case smth goes wrong
+		if OR(check [size of {_members::*} = 1], check [{_members::1} is not set]) = true: #!! Second check is just in case smth goes wrong
 			disconnect bot of event-guild
 	else:
 		stop current queue of event-guild
