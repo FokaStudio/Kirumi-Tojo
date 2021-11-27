@@ -397,23 +397,23 @@ discord command queue:
 			set timestamp of embed to now
 		reply with last embed
 
-#discord command speed [<number>]:
-#	prefixes: %{db_SI::%discord d of event-guild%::prefix}%
+#discord command audiospeed [<number>]:
+#	prefixes: %Kirumi discord prefix of event-guild%
 #	trigger:
 #		if arg 1 is not set:
-#			reply with ":cloud_tornado: **Current __speed__: `%speed of event-guild%`**"
+#			reply with ":cloud_tornado: **Current __speed__: `%audio speed of event-guild%`**"
 #			stop
-#		set guild speed of event-guild to arg-1
-#		reply with ":cloud_tornado: **The __speed__ has been changed to `%guild speed of event-guild%`!**"
+#		set audio speed of event-guild to arg-1
+#		reply with ":cloud_tornado: **The __speed__ has been changed to `%audio speed of event-guild%`!**"
 
 #discord command depth [<number>]:
 #	prefixes: %Kirumi discord prefix of event-guild%
 #	trigger:
 #		if arg 1 is not set:
-#			reply with ":deer: **Current __depth__: `%depth of event-guild%`**"
+#			reply with ":deer: **Current __depth__: `%audio depth of event-guild%`**"
 #			stop
-#		set depth of event-guild to arg-1
-#		reply with ":deer: **The __depth__ has been changed to `%depth of event-guild%`!**"
+#		set audio depth of event-guild to arg-1
+#		reply with ":deer: **The __depth__ has been changed to `%audio depth of event-guild%`!**"
 
 #discord command pitch [<number>]:
 #	prefixes: %Kirumi discord prefix of event-guild%
@@ -421,7 +421,7 @@ discord command queue:
 #		if arg 1 is not set:
 #			reply with ":musical_note: **Current __pitch__: `%audio pitch of event-guild%`**"
 #			stop
-#		set depth of event-guild to arg-1
+#		set audio pitch of event-guild to arg-1
 #		reply with ":musical_note: **The __pitch__ has been changed to `%audio pitch of event-guild%`!**"
 
 on track end:
