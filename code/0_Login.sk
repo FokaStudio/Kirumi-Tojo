@@ -81,8 +81,8 @@ discord command announce [<text>]:
 		if arg-1 is set:
 			reply with arg-1
 		else:
-			reply with "*This is an example message!**%nl%```applescript%nl%1 | ""Codeblock!""%nl%```%nl%[fancy URL formatting](https://example.com)" and store it in {_msg}
-			wait 7 seconds
+			reply with "**This is an example message!**%nl%```applescript%nl%1 | ""Codeblock!""%nl%```%nl%`*Italic*` `__Underlined__` `~~Strikethrough~~` `**Bold**`%nl%> Quote!%nl%> Insert `>` at the begging of a line to create a quote!%nl%> Make it as long as you like!%nl%>%nl%>%nl%> *(empty quote lines)*%nl%Quote ends here!%nl%%nl%>>> Append `>>>` in front of the line to make the quote go all the way down to the end of the message!" and store it in {_msg}
+			wait 15 seconds
 			destroy discord entity {_msg}
 
 discord command prefix [<text>]:
