@@ -89,9 +89,34 @@ discord command reload [<text>]:
 				if all enabled scripts doesn't contain {_script}:
 					reply to event-message with ":x: **This script doesn't exist!** %nl%<:reply:906517020651171860>*Do `dev reload` for a full list of those!*" with event-bot
 					stop
+				set {_msg} to 0
+				set {_mcount} to 1
 				set {_reload} to now
 				reload script {_script} and store errors in {_errors::*}
-				set {_msg::1} to "**Reloaded %arg-1% in %difference between {_reload} and now%**"
+				set {_msg::%{_mcount}%::*} to "**Reloaded %arg-1% in %difference between {_reload} and now%**"
+				set {_msg} to length of {_msg::%{_mcount}%::1}
 				if {_errors::*} is set:
-					set {_msg::*} to {_msg::1}, "**I have encountered errors though!**" and {_errors::*}
-				reply to event-message with join {_msg::*} with nl with event-bot
+					set {_msg::%{_mcount}%::*} to {_msg::%{_mcount}%::*} and "**I have encountered errors though!**"
+					add length of {_msg::%{_mcount}%::2} to {_msg}
+					loop {_errors::*}:
+						if loop-value contains "Empty configuration section!":
+							set {_error} to "```diff%nl%+ %loop-value%%nl%```" 
+						else if loop-value contains "Can't understand":
+							set {_error} to "```diff%nl%- %loop-value%%nl%```"
+						else if loop-value contains "Possible name conflict":
+							set {_error} to "```ini%nl%[%loop-value%]%nl%```"
+						else if loop-value contains "invalid line":
+							set {_error} to "```fix%nl%%loop-value%%nl%```"
+						else if loop-value contains "cannot be saved":
+							set {_error} to "```yaml%nl%##%loop-value%%nl%```"
+						else:
+							set {_error} to "```%nl%%loop-value%%nl%```"
+						add length of {_error} to {_msg}
+						if {_msg} > 2000:
+							add 1 to {_mcount}
+							set {_msg::%{_mcount}%::*} to {_error}
+							set {_msg} to 0
+						else:
+							set {_msg::%{_mcount}%::*} to {_msg::%{_mcount}%::*} and {_error}
+				loop {_mcount} times:
+					reply with join {_msg::%loop-number%::*} with nl
