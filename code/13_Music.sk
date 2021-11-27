@@ -24,7 +24,6 @@ expression [the] progressbar of %number% and %number% with character %string% wi
 		return join {_string}.substring(0, {_index}), expr-3, {_string}.substring({_index}+1)
 
 function toSeconds(time: timespan) :: number:
-	broadcast "%((unix timestamp of now) - (unix timestamp of ({_time} ago)))%"
 	return (((unix timestamp of now) - (unix timestamp of ({_time} ago)))/1000)
 
 discord command favorite:
