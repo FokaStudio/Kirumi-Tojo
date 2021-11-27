@@ -382,16 +382,17 @@ discord command queue:
 			loop queue of event-guild:
 				if {_i} is not bigger than 15:
 					add "`%{_i}%` :notes: %track title of loop-track%" to {_l::*}
-					set {_dur} to track duration of loop-track
-					set {_dur} to toSeconds({_dur})
-					add {_dur} to {_total}
 					add 1 to {_i}
 				else:
 					add "" and ":heavy_plus_sign: *%(size of queue of event-guild - 15)% positions more in the queue*"  to {_l::*}
 					exit loop
+			loop queue of event-guild:
+				set {_dur} to track duration of loop-track
+				set {_dur} to toSeconds({_dur})
+				add {_dur} to {_total}
 			add "" and ":clock1: **Total time: %minute time of {_total}%**" to {_l::*}
 			set description of embed to join {_l::*} with nl
-			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
+			set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
 			set footer icon of embed to avatar of event-member
 			set timestamp of embed to now
 		reply with last embed
