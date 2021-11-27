@@ -34,14 +34,16 @@ discord command rainbow <user=%event-user%>:
 	trigger:
 		reply to event-message with "https://api.devs-hub.xyz/rainbow?image=%avatar of arg-1%?size=2048" with event-bot
 
-discord command magik <user=%event-user%> [<int=50>]:
+discord command magik <int=30> [<user=%event-user%>]:
 	aliases: magic, magicc
 	prefixes: %Kirumi discord prefix of event-guild%
 	description: Become a true magical creature with this wacky filter
 	category: image
-	usage: %Kirumi discord prefix of event-guild%magik [<member>]
+	usage: %Kirumi discord prefix of event-guild%magik [<scale>] [<member>]
 	trigger:
-		reply to event-message with "https://api.devs-hub.xyz/magik?image=%avatar of arg-1%?size=2048&%" with event-bot"""%level=%arg-2%" with event-bot
+		set {_magik} to "https://api.devs-hub.xyz/magik?image=%avatar of arg-2%?size=2048<level=%arg-1%"
+		replace all "<" with "&" in {_magik}
+		reply to event-message with {_magik} with event-bot
 
 discord command glitch <user=%event-user%>:
 	prefixes: %Kirumi discord prefix of event-guild%
