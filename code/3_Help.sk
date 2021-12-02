@@ -14,9 +14,9 @@ function helpMessage(c: string, u: user, g: guild) :: embedbuilder:
 			add inline field named ":frame_photo: Image" with value "Let me become your personal make-up artist" to fields of embed
 #			add inline field named "Tags" with value "My quick responses if you would wish to ask me anything" to fields of embed
 #			add inline field named "Leveling" with value "My leveling features" to fields of embed
-			add inline field named "Minecraft" with value "Some commands related to this famous game..." to fields of embed
-			add inline field named "Music" with value "<:beta1:906500514068447242><:beta2:906500513971961916> :new: I have found an unused radio in the closet, maybe it still works...?" to fields of embed
-			set thumbnail of embed to "https://fokastudio.github.io/Kirumi-Tojo/assets/kirumi/kirumi_7.png"
+			add inline field named ":video_game: Games" with value "I found some board games and a games console while cleaning up my Repository. Would you want to play some?" to fields of embed
+			add inline field named ":musical_note: Music <:beta1:906500514068447242><:beta2:906500513971961916>" with value ":new: I have found an unused radio in the closet, maybe it still works...?" to fields of embed
+			set thumbnail of embed to "https://fokastudio.github.io/FokaStudio/kirumi/kirumi/kirumi_7.png"
 		else if first index of "command" in {_c} = 1:
 			set {_c::*} to {_c} split at "."
 			loop all discord commands:
@@ -74,8 +74,8 @@ discord command help [<string>]:
 			add new choice with value "help.moderation" with name "Moderation" with desc "Moderation capabilities of mine" with reaction "tools" to choices of dropdown
 			add new choice with value "help.image" with name "Image" with desc "Let me become your personal make-up artist" with reaction "frame_photo" to choices of dropdown
 #			add new choice with value "help.leveling" with name "Leveling" with desc "My leveling features" with reaction "sparkles" to choices of dropdown
-			add new choice with value "help.minecraft" with name "Minecraft" with desc "Some commands related to this famous game..." with reaction "green_book" to choices of dropdown
-			add new choice with value "help.music" with name "Music" with desc "(BETA)   I have found an unused radio in the closet, maybe it still works...?" with reaction "notes" to choices of dropdown
+			add new choice with value "help.games" with name "Games" with desc "I found some board games and a games console while cleaning up my Repository" with reaction "video_game" to choices of dropdown
+			add new choice with value "help.music" with name "Music" with desc "(BETA)   I have found an unused radio in the closet, maybe it still works...?" with reaction "musical_note" to choices of dropdown
 		set {_dropdown} to last dropdown
 		make dropdown {_dropdown} run one time:
 			defer the interaction

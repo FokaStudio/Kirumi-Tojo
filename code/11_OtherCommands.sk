@@ -75,8 +75,7 @@ discord command server [<text>]:
 		map json {_server} to {_server::*}
 		if {_server::error} is set:
 			reply to event-message with ":x: **There isn't any server with this IP, try one that actually exist...**" with event-bot
-			stop
-		if {_server::online} = true:
+		else if {_server::online} = true:
 			make embed:
 				set embed color of the embed to light red
 				set title of embed to "All info about %arg-1%"
@@ -87,7 +86,9 @@ discord command server [<text>]:
 				add inline field named ":lock: Protocol" with value "%{_server::protocol}%" to fields of embed
 				add inline field named ":globe_with_meridians: IP" with value "%{_server::ip}%" to fields of embed
 				add inline field named ":passport_control: Port" with value "%{_server::port}%" to fields of embed
-				add inline field named ":page_facing_up: MOTD" with value "```%{_server::motd::clean::1}%%nl%%{_server::motd::clean::2}%```" to fields of embed
+				set {_motd} to "%{_server::motd::clean::1}%"
+				set {_motd} to "%{_motd}%%nl%%{_server::motd::clean::2}%" if {_server::motd::clean::2} is set
+				add inline field named ":page_facing_up: MOTD" with value "```applescript%nl%%{_motd}%%nl%```" to fields of embed
 				set the thumbnail of embed to "https://api.minetools.eu/favicon/%arg-1%"
 				set title url of embed to "https://wiki.vg/Protocol_version_numbers"
 				set the footer of embed to "Requested by %event-user%##%tag of event-user%"
@@ -210,3 +211,122 @@ discord command meme [<string>]:
 		reply with last embed
 		delete {sr}
 
+function random(1: num, 2: num) :: num:
+	return random number between {_1} and {_2}
+
+function randomInt(1: int, 2: int) :: num:
+	return random integer between {_1} and {_2}
+
+discord command minecraft:
+	prefixes: %Kirumi discord prefix of event-guild%
+	category: games
+	description: Get a meme from a given Subreddit
+	usage: %Kirumi discord prefix of event-guild%minecraft
+	trigger:
+		reply with "**Setting up Minecraft on Discord Game Emulator...**" and store it in {_msg}
+		wait "%random(3, 5)% seconds" parsed as timespan
+		set {_biomes::*} to "desert", "forest", "plains" and "tundra"
+		set {_biome} to random element out of {_biomes::*}
+		edit {_msg} to show "**Eroding... (0%%)**"
+		loop 8 times:
+			switch {_biome}:
+				case "plains":
+					chance of 35%:
+						add ":blossom:", ":sunflower:", ":pig2:", ":cow2:" or ":racehorse:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					add "<:grass_block_side:915267367783784538>" to {_surface::*}
+				case "forest":
+					chance of 35%:
+						add ":deciduous_tree:", ":wood:", ":fallen_leaf:" or ":evergreen_tree:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					chance of 15%:
+						add "<a:water:915265154688618496>" to {_surface::*}
+					else:
+						add "<:grass_block_side:915267367783784538>" to {_surface::*}
+				case "desert":
+					chance of 35%:
+						add ":cactus:", ":scorpion:" or ":palm_tree:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					add "<:sand:915267368144490526>" to {_surface::*}
+				case "tundra":
+					chance of 35%:
+						add ":christmas_tree:" or ":polar_bear:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					chance of 25%:
+						add "<a:water:915265154688618496>" to {_surface::*}
+					else:
+						add "<:grass_block_snow:915267367783792741>" to {_surface::*}
+			wait "%random(1, 5)% ticks" parsed as timespan
+		edit {_msg} to show "**Soiling... (%randomInt(6, 16)%%%)**" or "**Raising... (%randomInt(6, 16)%%%)**"
+		loop 8 times:
+			add "<:dirt:915267367762804827>" to {_dirt.1::*}
+			wait "%random(1, 3)% ticks" parsed as timespan
+		edit {_msg} to show "**Assembling... (%randomInt(17, 35)%%%)**", "**Planting... (%randomInt(17, 35)%%%)**" or "**Raising... (%randomInt(17, 35)%%%)**"
+		loop 8 times:
+			chance of 40%:
+				add "<:dirt:915267367762804827>" to {_dirt.2::*}
+			else:
+				add "||<:stone:915267368148693033>||" to {_dirt.2::*}
+			wait "%random(1, 4)% tick" parsed as timespan
+		edit {_msg} to show "**Growing... (%randomInt(36, 54)%%%)**", "**Assembling... (%randomInt(36, 54)%%%)**" or "**Carving... (%randomInt(36, 54)%%%)**"
+		set {_y} to 0
+		loop 3 times:
+			add 1 to {_y}
+			loop 8 times:
+				switch "%{_y}%":
+					case "1":
+						chance of 10%:
+							add "||<:coal_ore:915267367850881085>||" to {_mine::%{_y}%::*}
+						else:
+							add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "2":
+						chance of 15%:
+							add "||<:coal_ore:915267367850881085>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:iron_ore:915267368010272818>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "3":
+						chance of 15%:
+							add "||<:iron_ore:915267368010272818>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:gold_ore:915267367800565810>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "4":
+						chance of 15%:
+							add "||<:gold_ore:915267367800565810>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:copper_ore:915267367817347142>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "5":
+						chance of 15%:
+							add "||<:copper_ore:915267367817347142>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:diamond_ore:915267367439859783>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+			wait "%random(1, 4)% ticks" parsed as timespan
+		edit {_msg} to show "**Planting... (%randomInt(54, 78)%%%)**" or "**Lighting... (%randomInt(54, 78)%%%)**"
+		loop 8 times:
+			add "||<:bedrock:915267368115134524>||" to {_bedrock::*}
+			wait "%random(1, 2)% ticks" parsed as timespan
+		edit {_msg} to show "**Spawning... (%randomInt(79, 97)%%%)**"
+		set {_deco} to join {_deco::*} with ""
+		set {_surface} to join {_surface::*} with ""
+		set {_dirt.1} to join {_dirt.1::*} with ""
+		set {_dirt.2} to join {_dirt.2::*} with ""
+		set {_bedrock} to join {_bedrock::*} with ""
+		loop 5 times:
+			set {_mine.%loop-number%} to join {_mine::%loop-number%::*} with ""
+			wait "%random(1, 1.5)% ticks" parsed as timespan
+		edit {_msg} to show "%{_deco}%%nl%%{_surface}%%nl%%{_dirt.1}%%nl%%{_dirt.2}%%nl%%{_mine.1}%%nl%%{_mine.2}%%nl%%{_mine.3}%%nl%%{_bedrock}%"
