@@ -126,12 +126,18 @@ discord command play [<string>]:
 			stop
 		else if voice channel of {_bot} is not set:
 			connect event-bot to voice channel of event-member
+			wait 1 second
+			unmute self member of bot named "Kirumi" in event-guild
 		else if voice channel of event-member != voice channel of {_bot}:
 			reply with ":x: **I am already connected to another voice channel!**"
+			stop
+		if {_bot} doesn't have discord permission (voice mute others) in voice channel of event-member:
+			reply with ":x: **I am missing permission ""Mute Members"" in your channel!**%nl%<:reply:906517020651171860> You can fix this by manually asigning this permission to my role or by reusing the OAUTH code to update my perms *(no need to remove the bot from the server)*"
 			stop
 		if arg 1 is not set:
 			reply with ":x: **You __must__ specify an URL or a YouTube input!**"
 			stop
+		
 		set {_i} to 0
 		loop "f:", "fav:", "favorite:" and "favourite:":
 			add 1 to {_i}
