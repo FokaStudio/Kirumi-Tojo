@@ -55,7 +55,7 @@ discord command favorite:
 					set title of embed to "⭐Added %{_track}% to your favorite list!"
 					set title url of embed to track url of {_track}
 					set color of embed to {@magenta}
-					set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+					set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 					set footer icon of embed to avatar of event-member
 					set timestamp of embed to now
 					set thumbnail of embed to track thumbnail of {_track}
@@ -104,7 +104,7 @@ discord command favorites [<member=%event-member%>]:
 			make embed:
 				set title of embed to "⭐%arg-1%'s Favorite Tracks"
 				set color of embed to {@magenta}
-				set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+				set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 				set footer icon of embed to avatar of event-member
 				set timestamp of embed to now
 				loop {_tracks::*}:
@@ -158,7 +158,7 @@ discord command play [<string>]:
 				set color of embed to {@blue}
 				set author url of embed to arg-1
 				set timestamp of embed to now
-				set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+				set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 				set footer icon of embed to avatar of event-member
 			reply with last embed
 		else:
@@ -171,7 +171,7 @@ discord command play [<string>]:
 				set title of embed to "%{_track}%"
 				set title url of embed to track url of {_track}
 				set color of embed to {@light blue}
-				set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+				set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 				set footer icon of embed to avatar of event-member
 				set thumbnail of embed to track thumbnail of {_track}
 				add "`•` Duration: %track duration of {_track}%" to {_l::*}
@@ -253,7 +253,7 @@ discord command skip [<int=1>]:
 				set thumbnail of embed to track thumbnail of {_track}
 				add "`•` Duration: %track duration of {_track}%" to {_l::*}
 				add "`•` Author: %track author of {_track}%" to {_l::*}
-			set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 			set footer icon of embed to avatar of event-member
 			set timestamp of embed to now
 		reply with last embed
@@ -280,7 +280,7 @@ discord command stop:
 		make embed:
 			set author of embed to "Bye, See you next time 👋"
 			set color of embed to {@red}
-			set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 			set footer icon of embed to avatar of event-member
 			set timestamp of embed to now
 		reply with last embed
@@ -341,7 +341,7 @@ discord command nowplaying:
 			set title of embed to "%{_track}%"
 			set title url of embed to track url of {_track}
 			set color of embed to {@light blue}
-			set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 			set footer icon of embed to avatar of event-member
 			set timestamp of embed to now
 			set thumbnail of embed to track thumbnail of {_track}
@@ -392,7 +392,7 @@ discord command queue:
 				add {_dur} to {_total}
 			add "" and ":clock1: **Total time: %minute time of {_total}%**" to {_l::*}
 			set description of embed to join {_l::*} with nl
-			set footer of embed to "Asked by %discord name of event-member%%tag of event-member%"
+			set footer of embed to "Asked by %discord name of event-member%##%tag of event-member%"
 			set footer icon of embed to avatar of event-member
 			set timestamp of embed to now
 		reply with last embed
