@@ -1,0 +1,8 @@
+on message delete:
+	auhtor of event-message is not a bot
+	create webhook client named "Tojo-san" in event-channel and store it in {_webhook}
+	set {_mess} to new webhook builder
+	set webhook name of {_mess} to "%event-member% (Deleted)" 
+	set wevhook avatar url of {_mess} to discord avatar of event-member
+	set the webhook content of {_mess} to event-string
+	make {_webhook} send {_mess}
