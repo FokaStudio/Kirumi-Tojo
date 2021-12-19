@@ -108,6 +108,9 @@ on bot join:
 		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
 		set value "language" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "en_us"
 		set value "tag_prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**"
+		set value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has joined!** :wave:"
+		set value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has left**"
 
 on bot leave:
 	if event-bot = Kirumi:

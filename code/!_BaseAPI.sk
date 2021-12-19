@@ -53,6 +53,15 @@ guild property audit[( |-)]channel:
 	delete:
 		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
 
+guild property welcome[( |-)]channel:
+	return type: string
+	get:
+		return value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json"
+	set:
+		set value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to change value
+	delete:
+		set value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of expr-1%.json" to "000000000000000000"
+
 guild property suggestion[[s](-| )]channel:
 	return type: string
 	get:
