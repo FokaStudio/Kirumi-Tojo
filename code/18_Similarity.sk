@@ -1,0 +1,31 @@
+import:
+	org.apache.commons.lang3.StringUtils
+
+options:
+	minimum: 0
+
+function reloadSimilarity():
+	delete {similarity::*}
+	loop all discord commands:
+		add "%loop-value%" to {similarity::*}
+		add loop-value's discord aliases to {similarity::*}
+
+init:
+	reloadSimilarity()
+
+on message receive:
+	if event-user is not a discord bot:
+		if "%event-message%" starts with "%kirumi discord prefix of event-guild%":
+			set {_split::*} to ("%event-message%") split at " "
+			replace first "%kirumi discord prefix of event-guild%" with "" in {_split::1}
+			"%{similarity::*}%" does not contain "%{_split::1}%"
+			set {_best} to 0
+			loop {similarity::*}:
+				set {_n} to StringUtils.getJaroWinklerDistance(loop-value, "%{_split::1}%")*100
+				if {_n} > {_best}:
+					set {_best} to {_n}
+					set {_best::cmd} to loop-value
+			if {_best} >= {@minimum}:
+				reply with "❓ That command doesn't exist! Did you mean `%kirumi discord prefix of event-guild%%{_best::cmd}%` - %{_best}%%%?"
+			else:
+				reply with "❓ That command doesn't exist!"
