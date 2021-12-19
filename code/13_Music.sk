@@ -29,7 +29,7 @@ function toSeconds(time: timespan) :: number:
 discord command favorite:
 	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: favourite, fav
-	description: :new: Favorite a track and use it for quick-play later on
+	description: Favorite a track and use it for quick-play later on %nl%:new: **Limit moved to 20!** 
 	category: music
 	usage: %Kirumi discord prefix of event-guild%favorite
 	trigger:
@@ -39,7 +39,7 @@ discord command favorite:
 			stop
 		else if bot is playing in event-guild:
 			set {_tracks::*} to values "favorite_tracks" from "plugins/DiscordData/user_data/%discord id of event-member%.json" where [input is not ""]
-			if size of {_tracks::*} < 3:
+			if size of {_tracks::*} < 20:
 				set {_track} to track bot is playing in event-guild
 				set {_track.url} to track url of {_track}
 				if {_tracks::*} contains {_track.url}:
