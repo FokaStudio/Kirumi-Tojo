@@ -42,15 +42,26 @@ discord command whois [<member=%event-member%>]:
 	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: userinfo
 	category: general
-	description: Grab info of one of the members of this server
+	description: Grab info about one of the members of this server
 	trigger:
 		make embed:
-			set title of embed to "Who is %discord name of arg-1% ?"
-			add "`•` Username: %discord name of arg 1%" to {_l::*}
-			add "`•` Nick: %discord nick name of arg 1%" to {_l::*}
-			add "`•` Tag: %tag of arg 1%" to {_l::*}
-			add "`•` Mention: %mention tag of arg 1%" to {_l::*}
-			set description of embed to join {_l::*} with nl
+			set {_s::*} to activities of arg-1
+			if "%{_s::1}%" contains "custom status: ":
+				set {_status} to {_s::1}
+				delete {_s::1}
+				set {_status} to "%{_status}%"
+			loop {_s::*}:
+				set {_s::%loop-index%} to "%loop-value%"
+			set {_activities} to join {_s::*} with nl
+			replace all "custom status: " with "" in {_status}
+			set title of embed to "Who is %discord name of arg-1%?"
+			set description of embed to "~*%{_status}%*" if {_status} is set
+			add inline field named "Username" with value discord name of arg 1 to fields of embed
+			add inline field named "Nick" with value discord nick name of arg 1 to fields of embed
+			add inline field named "Tag" with value "%tag of arg 1%" to fields of embed
+			add inline field named "Mention" with value "%mention tag of arg 1%%nl%Click onto it for additional info that is not displayed there" to fields of embed
+			if {_activities} is set:
+				add inline field named "Activities" with value "%{_activities}%" to fields of embed 
 			set thumbnail of embed to avatar of arg-1
 			set footer of embed to "Asked by %discord name of event-member%"
 			set {_color} to main color of (image from url discord user avatar of arg-1)
