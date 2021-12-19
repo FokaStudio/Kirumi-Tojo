@@ -18,7 +18,7 @@ discord command avatar [<member=%event-member%>]:
 		set {_png}, {_jpg} and {_webp} to "%avatar of arg-1%?size=2048"
 		replace ".png" in {_jpg} with ".jpg"
 		replace ".png" in {_webp} with ".webp"
-		set {_desc::*} to "**Click below for other file formats:**" and "[`.webp`](%{_webp}%) [`.jpg`](%{_jpg}%)"
+		set {_desc::*} to "**Click below for different file formats:**" and "[`.png`](%{_png}%) [`.webp`](%{_webp}%) [`.jpg`](%{_jpg}%)"
 		make embed:
 			set title of embed to "Avatar of %discord name of arg-1%##%tag of arg-1%"
 			set embed color of the embed to skript color from rgb {_red}, {_green}, {_blue}
