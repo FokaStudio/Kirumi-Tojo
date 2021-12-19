@@ -2,14 +2,27 @@
 
 discord command setup [<text>] [<channel>]:
 	prefixes: %Kirumi discord prefix of event-guild%
-	description: Manage different things across the server in a form of a neat GUI
+	description: Manage different things across the server
 	category: general
 	permissions: manage server
 	usage: %Kirumi discord prefix of event-guild%setup <entry> [<channel>] (will create a new one if not specified)
 	trigger:
 		set {_everyone} to public role of event-guild
 		if arg-1 is not set:
-			do nothing
+			make embed:
+				set title of embed to "Setup Help"
+				set description of embed to "**This is the help box for the %Kirumi discord prefix of event-guild%setup**%nl%This command has **2 arguments**:%nl%:one: Type of the so-called *setup action* - it accepts entries such as ""audit"", ""lobby"" and ""suggestions""%nl%:two: *Channel* to assign the *setup action* to. Leave blank to create a new one (fully sets permissions, names and descriptions, even slowmodes on certain ones)"
+				set author of the embed to "Kirumi Tojo"
+				set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+				set embed color of the embed to orange
+				add inline field named "Audit Logs" with value "`%Kirumi discord prefix of event-guild%setup audit`%nl%allows you to setup an audit channel. All specific logs go directly there" to fields of embed
+				add inline field named "Suggestions" with value "`%Kirumi discord prefix of event-guild%setup suggestions`%nl%allows you to setup a suggestions channel. All messages posted there are instantly deleted and turned into a poll. Message authors can't vote for any option in their own polls" to fields of embed
+				add inline field named "Lobby" with value "`%Kirumi discord prefix of event-guild%setup lobby`%nl%allows you to setup a lobby channel *(formerly known as `Welcome Channel`)*. When a member joins or leaves the server, a message will be sent there notifying everyone about it" to fields of embed
+				set thumbnail of embed to "https://fokastudio.github.io/FokaStudio/kirumi/kirumi/kirumi_1.png"
+				set footer of embed to "Requested by %discord name of event-member%##%tag of event-member%"
+				set footer icon of embed to avatar of event-member
+				set timestamp of embed to now
+			reply with last embed
 		else:
 			if arg-1 = "audit" or "audit_channel":
 				if arg-2 is set:
@@ -48,3 +61,17 @@ discord command setup [<text>] [<channel>]:
 						deny permission (message add reaction) to role {_everyone} in channel {_s}
 						set suggestion channel of event-guild to discord id of {_s}
 						reply with ":trophy: **Succesfully created a new Suggestion channel!**" with event-bot
+			else if arg-1 is "welcome", "welcome_channel" or "lobby":
+				if arg-2 is set:
+					set welcome channel of event-guild to discord id of arg-2
+					reply with "**:trophy: %arg-2% is now a Lobby channel! New joins and leaves will be announced here!**" with event-bot
+				else:
+					if welcome channel of event-guild is not kirumi-default:
+						reply with ":x: **Lobby channel was already created, you can only assign a new one now!**" with event-bot
+					else:
+						set {_action} to new text channel action in event-guild
+						set channel name of {_action} to "lobby"
+						set topic of {_action} to "Newly joined members have their presence announced here%nl%Works also when they leave" with event-bot
+						create {_action} and store it in {_s}
+						set welcome channel of event-guild to discord id of {_s}
+						reply with ":trophy: **Succesfully created a new Lobby channel!**" with event-bot
