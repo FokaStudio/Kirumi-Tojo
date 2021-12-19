@@ -75,17 +75,19 @@ discord command server [<text>]:
 	executable in: guild
 	category: games
 	usage: server <minecraft server>
-	aliases: mcserv, mcserver, serv, serverinfo
+	aliases: mcserv, mcserver, serv
 	description: Grab all info about any server in a form of a neat embed
 	trigger:
 		if arg-1 is not set:
 			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%Kirumi discord prefix of event-guild%mcserv mc.hypixel.net```" with event-bot
+			stop
 		send http request to "https://api.mcsrvstat.us/2/%arg-1%"
 		set {_server} to last http response
 		set {_server} to {_server}'s body
 		map json {_server} to {_server::*}
 		if {_server::error} is set:
 			reply to event-message with ":x: **There isn't any server with this IP, try one that actually exist...**" with event-bot
+			stop
 		else if {_server::online} = true:
 			make embed:
 				set embed color of the embed to light red
