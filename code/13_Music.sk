@@ -70,7 +70,7 @@ discord command unfavorite [<int>]:
 	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: favourite
 	aliases: unfav
-	description: :new: Unfavorite a track *(that one is pretty self-explanatory)*
+	description: Unfavorite a track *(that one is pretty self-explanatory)*
 	category: music
 	usage: %Kirumi discord prefix of event-guild%favorite
 	trigger:
@@ -93,7 +93,7 @@ discord command unfavorite [<int>]:
 discord command favorites [<member=%event-member%>]:
 	prefixes: %Kirumi discord prefix of event-guild%
 	aliases: favourite, favs
-	description: :new: List favorite tracks of a specified user
+	description: List favorite tracks of a specified user
 	category: music
 	usage: %Kirumi discord prefix of event-guild%favorite
 	trigger:
