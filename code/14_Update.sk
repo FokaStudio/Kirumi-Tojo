@@ -11,8 +11,11 @@ on disky command:
 	set {_values::guild} to event-guild
 	set {_values::string} to {_ver.serv}
 	set {_event} to custom event "ServerUpdateEvent" with {_values::*}
-	if {_ver.serv} = "1.2a":
+	if {_ver.serv} = "6" or "7":
 		call {_event}
-		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
 		set value "tag_prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**"
+		set value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has joined!** :wave:"
+		set value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has left**"
+		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version 
 		set value "language" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "en_us"

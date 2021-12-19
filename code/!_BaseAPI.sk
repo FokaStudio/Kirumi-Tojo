@@ -18,7 +18,7 @@ expression Kirumi:
 expression [Kirumi] current version:
 	return type: string 
 	get:
-		return "7"
+		return "8"
 
 expression kirumi(-| )default:
 	return type: string
