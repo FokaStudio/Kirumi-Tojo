@@ -70,6 +70,28 @@ discord command whois [<member=%event-member%>]:
 			set timestamp of embed to now
 		reply to event-message with last embed with event-bot
 
+discord command serverinfo:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: userinfo
+	category: general
+	description: Grab info about this server
+	trigger:
+		make embed:
+			set title of embed to "What is %event-guild%?"
+			add inline field named "<:nitro:913791735182790687> Boosts" with value "%boost amount of event-guild%" to fields of embed
+			add inline field named ":busts_in_silhouette: Member Count" with value "%size of members of event-guild%" to fields of embed
+			add inline field named ":crown: Owner" with value mention tag of owner of event-guild to fields of embed
+			add inline field named "Channels" with value "Text: %size of text channels of event-guild%%nl%Voice:%size of voice channels of event-guild%%nl%Stage: %size of stage channels of event-guild%%nl%News: %size of news channels of event-guild%%nl%" to fields of embed
+#			add inline field named "Boosts" with value "%boost amount of event-guild%" to fields of embed
+#			add inline field named "Boosts" with value "%boost amount of event-guild%" to fields of embed
+			set thumbnail of embed to avatar of event-guild
+			set footer of embed to "Asked by %discord name of event-member%"
+			set {_color} to main color of (image from url discord avatar of event-guild)
+			set {_color::*} to "%{_color}%" parsed as "color with red %int%, green %int% and blue %int% \(%int%\)"
+			set embed color of embed to skript color from rgb {_color::1}, {_color::2}, {_color::3}
+			set timestamp of embed to now
+		reply to event-message with last embed with event-bot
+
 discord command server [<text>]:
 	prefixes: %Kirumi discord prefix of event-guild%
 	executable in: guild
