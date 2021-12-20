@@ -5,7 +5,10 @@ site_description: >-
   Documentation and Website for Kirumi Tojo Discord bot
 nav:
     - Home: index.md
-    - Tasklist: tasklist.md
+#    - Permissions: permissions.md
+    - FAQ: faq.md
+    - Feature Setup: setup.md
+    - To-Do: tasklist.md
 
 extra:
   social:
@@ -29,6 +32,7 @@ markdown_extensions:
   - md_in_html
   - meta
   - abbr
+  - tables
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.critic
@@ -91,8 +95,8 @@ theme:
     primary: grey
     accent: blue
   
-  favicon: docs/assets/icon.png
-  logo: docs/assets/icon.png
+  favicon: assets/icon.png
+  logo: assets/icon.png
 
   icon:
     repo: fontawesome/solid/trash
