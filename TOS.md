@@ -1,3 +1,0 @@
-# Terms of Service
-
-Will write those later on...
