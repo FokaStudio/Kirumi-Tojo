@@ -16,5 +16,5 @@ And here we are today! Kirumi is now a multi-purpose bot to boost your server up
 **All graphics were made by Team Danganronpa, full copyright goes to them**
 
 !!!note "Pls Team Danganronpa..."
-    ***Pls don't sue me... :heart: ***
+	***Pls don't sue me... :heart: ***
 
