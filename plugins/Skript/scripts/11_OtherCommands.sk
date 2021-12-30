@@ -1,0 +1,367 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+function colorBox() :: string:
+	set {_colors::*} to "red", "orange", "yellow", "green", "blue", "purple"
+	return ":%random element of {_colors::*}%_square:"
+
+discord command avatar [<member=%event-member%>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: av, a
+	executable in: guild
+	usage: avatar [<member>]
+	category: general
+	description: Grab the Avatar of any member of this guild
+	trigger:
+		set {_red} to random integer between 1 to 255
+		set {_green} to random integer between 1 to 255
+		set {_blue} to random integer between 1 to 255
+		set {_png}, {_jpg} and {_webp} to "%avatar of arg-1%?size=2048"
+		replace ".png" in {_jpg} with ".jpg"
+		replace ".png" in {_webp} with ".webp"
+		set {_desc::*} to "**Click below for different file formats:**" and "[`.png`](%{_png}%) [`.webp`](%{_webp}%) [`.jpg`](%{_jpg}%)"
+		make embed:
+			set title of embed to "Avatar of %discord name of arg-1%##%tag of arg-1%"
+			set embed color of the embed to skript color from rgb {_red}, {_green}, {_blue}
+			set description of embed to join {_desc::*} with nl
+			set image of embed to "%{_png}%"
+			set footer of embed to "Requested by %discord name of event-user%##%tag of event-user%"
+			set timestamp of embed to now
+		reply to event-message with last embed with event-bot
+
+discord command clyde [<text>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	executable in: guild
+	category: general
+	description: Make my good friend Clyde say something
+	trigger:
+		set {_arg1} to (arg-1 ? "Include something in the first argument next time!")
+		replace all " " with "%%20" in {_arg1}
+		reply to event-message with "https://ctk-api.herokuapp.com/clyde/%{_arg1}%" with event-bot
+
+discord command whois [<member=%event-member%>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: userinfo
+	category: general
+	description: Grab info about one of the members of this server
+	trigger:
+		make embed:
+			set {_s::*} to activities of arg-1
+			if "%{_s::1}%" contains "custom status: ":
+				set {_status} to {_s::1}
+				delete {_s::1}
+				set {_status} to "%{_status}%"
+			loop {_s::*}:
+				set {_s::%loop-index%} to "%loop-value%"
+			set {_activities} to join {_s::*} with nl
+			replace all "custom status: " with "" in {_status}
+			set title of embed to "Who is %discord name of arg-1%?"
+			set description of embed to "~*%{_status}%*" if {_status} is set
+			add inline field named "Username" with value discord name of arg 1 to fields of embed
+			add inline field named "Nick" with value discord nick name of arg 1 to fields of embed
+			add inline field named "Tag" with value "%tag of arg 1%" to fields of embed
+			add inline field named "Mention" with value "%mention tag of arg 1%%nl%Click onto it for additional info that is not displayed there" to fields of embed
+			if {_activities} is set:
+				add inline field named "Activities" with value "%{_activities}%" to fields of embed 
+			set thumbnail of embed to avatar of arg-1
+			set footer of embed to "Asked by %discord name of event-member%"
+			set {_color} to main color of (image from url discord user avatar of arg-1)
+			set {_color::*} to "%{_color}%" parsed as "color with red %int%, green %int% and blue %int% \(%int%\)"
+			set embed color of embed to skript color from rgb {_color::1}, {_color::2}, {_color::3}
+			set timestamp of embed to now
+		reply to event-message with last embed with event-bot
+
+discord command serverinfo:
+	prefixes: %Kirumi discord prefix of event-guild%
+	aliases: userinfo
+	category: general
+	description: Grab info about this server
+	trigger:
+		make embed:
+			set title of embed to "What is %event-guild%?"
+			add inline field named "<:nitro:913791735182790687> Boosts" with value "%boost amount of event-guild%" to fields of embed
+			add inline field named ":busts_in_silhouette: Member Count" with value "%size of members of event-guild%" to fields of embed
+			add inline field named ":crown: Owner" with value mention tag of owner of event-guild to fields of embed
+			add inline field named "Channels" with value "Text: %size of text channels of event-guild%%nl%Voice:%size of voice channels of event-guild%%nl%Stage: %size of stage channels of event-guild%%nl%News: %size of news channels of event-guild%%nl%" to fields of embed
+#			add inline field named "Boosts" with value "%boost amount of event-guild%" to fields of embed
+#			add inline field named "Boosts" with value "%boost amount of event-guild%" to fields of embed
+			set thumbnail of embed to avatar of event-guild
+			set footer of embed to "Asked by %discord name of event-member%"
+			set {_color} to main color of (image from url discord avatar of event-guild)
+			set {_color::*} to "%{_color}%" parsed as "color with red %int%, green %int% and blue %int% \(%int%\)"
+			set embed color of embed to skript color from rgb {_color::1}, {_color::2}, {_color::3}
+			set timestamp of embed to now
+		reply to event-message with last embed with event-bot
+
+discord command server [<text>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	executable in: guild
+	category: games
+	usage: server <minecraft server>
+	aliases: mcserv, mcserver, serv
+	description: Grab all info about any server in a form of a neat embed
+	trigger:
+		if arg-1 is not set:
+			reply to event-message with ":x: **You really should specify 1st argument...**%nl%*EXAMPLE:* ```%Kirumi discord prefix of event-guild%mcserv mc.hypixel.net```" with event-bot
+			stop
+		send http request to "https://api.mcsrvstat.us/2/%arg-1%"
+		set {_server} to last http response
+		set {_server} to {_server}'s body
+		map json {_server} to {_server::*}
+		if {_server::error} is set:
+			reply to event-message with ":x: **There isn't any server with this IP, try one that actually exist...**" with event-bot
+			stop
+		else if {_server::online} = true:
+			make embed:
+				set embed color of the embed to light red
+				set title of embed to "All info about %arg-1%"
+				set description of the embed to "Not sure what Protocol is? Click on the title%Kirumi discord prefix of event-guild%"
+				add inline field named ":green_circle: Server Status" with value "Online" to fields of embed
+				add inline field named ":pushpin: Online" with value "%{_server::players::online}% / %{_server::players::max}%" to fields of embed
+				add inline field named ":compass: Version" with value "%{_server::version}%" to fields of embed
+				add inline field named ":lock: Protocol" with value "%{_server::protocol}%" to fields of embed
+				add inline field named ":globe_with_meridians: IP" with value "%{_server::ip}%" to fields of embed
+				add inline field named ":passport_control: Port" with value "%{_server::port}%" to fields of embed
+				set {_motd} to "%{_server::motd::clean::1}%"
+				set {_motd} to "%{_motd}%%nl%%{_server::motd::clean::2}%" if {_server::motd::clean::2} is set
+				add inline field named ":page_facing_up: MOTD" with value "```applescript%nl%%{_motd}%%nl%```" to fields of embed
+				set the thumbnail of embed to "https://api.minetools.eu/favicon/%arg-1%"
+				set title url of embed to "https://wiki.vg/Protocol_version_numbers"
+				set the footer of embed to "Requested by %event-user%##%tag of event-user%"
+				set the timestamp of embed to now		
+			reply to event-message with last embed with event-bot
+		else:
+			make embed:
+				set embed color of the embed to dark red
+				set title of embed to "%arg-1% is currently offline"
+				set description of embed to "or I am unable to reach it :(%nl%Try searching for the server that is currently online, like **Hypixel**, which is never down"
+				set the footer of embed to "Requested by %event-user%##%tag of event-user%"
+				set the timestamp of embed to now		
+			reply to event-message with last embed with event-bot
+
+discord command search [<text>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	executable in: guild
+	category: general
+	usage: search <query>
+	description: Search the web for anything you want 
+	trigger:
+		if arg-1 is not set:
+			reply to event-message with ":x: **Hey, did you forgot about 1st argument again?**" with event-bot
+			stop
+		reply to event-message with "**Here is all that I found when searching for *%arg-1%***" with event-bot
+		set {_arg} to arg-1
+		replace all " " in {_arg} with "%%20"
+		reply with "https://image.thum.io/get/auth/54133-KirumiTojo/https://google.com/search?q=%{_arg}%" with event-bot
+
+discord command player [<text>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	executable in: guild
+	aliases: mcplayer, playerinfo
+	usage: player <player>
+	category: games
+	description: Grab any info about a specified player
+	trigger:
+		if arg-1 is not set:
+			reply to event-message with ":x: **Do you really hate that 1st argument? SPECIFY THE PLAYER**" with event-bot
+			stop
+		send http request to "https://api.minetools.eu/uuid/%arg-1%"
+		set {_player} to last http response
+		set {_player} to {_player}'s body
+		map json {_player} to {_player::*}
+		if {_player::error} is set:
+			reply to event-message with ":x: **This player doesn't exist**" with event-bot
+			stop
+		send http request to "https://api.minetools.eu/profile/%{_player::id}%"
+		set {_playerinfo} to last http response
+		set {_playerinfo} to {_playerinfo}'s body
+		map json {_playerinfo} to {_playerinfo::*}
+		wait 2 ticks
+		if {_playerinfo::decoded::textures::SKIN::metadata::model} is set:
+			set {_model} to "slim" 
+		else: 
+			set {_model} to "normal"
+		make embed:
+			set embed color of the embed to light red
+			set title of embed to "All info about %arg-1%"
+			set description of the embed to "Click on the title to go to %arg-1%'s NameMC profile"
+			add inline field named ":id: Profile ID" with value "%{_playerinfo::decoded::profileId}%" to fields of embed
+			add inline field named ":name_badge: Profile Name" with value "%{_playerinfo::decoded::profileName}%" to fields of embed
+			add inline field named ":person_standing: Player Model" with value "%{_model}%" in proper case to fields of embed
+			set the thumbnail of embed to "https://visage.surgeplay.com/bust/%{_playerinfo::decoded::profileId}%"
+			set title url of embed to "https://namemc.com/profile/%{_playerinfo::decoded::profileName}%"
+			set the footer of embed to "Requested by %event-user%##%tag of event-user%"
+			set the timestamp of embed to now		
+		reply to event-message with last embed with event-bot
+
+function meme(subreddit: string) :: string:
+	switch {_subreddit}:
+		case "meme":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/meme"
+		case "comedycemetery":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/comedycemetery"
+		case "wholesomememes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/wholesomememes"
+		case "memes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/memes"
+		case "terriblefacebookmemes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/terriblefacebookmemes"
+		case "dankmemes":
+			set {_url} to "https://meme-api.herokuapp.com/gimme/dankmemes"
+	replace all "<" with "&" in {_url}
+	return {_url}
+
+discord command meme [<string>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	category: fun
+	description: Get a meme from a given Subreddit
+	usage: %Kirumi discord prefix of event-guild%meme <subreddit>%nl%`<subreddit>` accepts entries like `memes`, `dankmemes`, `wholesomememes`, `meme`, `terriblefacebookmemes` and `comedycemetery` 
+	trigger:
+		if arg-1 is set:
+			if arg-1 != "memes", "dankmemes", "wholesomememes", "meme", "terriblefacebookmemes" or "comedycemetery":
+				reply with ":x: **This is not a supported Subreddit!%nl%<:reply:906517020651171860>Do `%Kirumi prefix of event-guild%help meme` for a full list of supported subreddits**"
+				stop
+			set {sr} to arg-1
+		else:
+			set {sr} to random element out of "memes", "dankmemes" and "meme"
+		broadcast meme({sr}) in world("world")
+		send a request to meme({sr}) with headers "User-agent: sky_high"
+		map json body of last http response to {_meme::*}
+		if {_meme::nsfw} = "true":
+			while {_meme::nsfw} = "true":
+				send a request to meme({sr}) with headers "User-agent: sky_high"
+				map json body of last http response to {_meme::*}
+				wait 1 second
+		make embed:
+			set author of the embed to "%{_meme::author}% • r/%{_meme::subreddit}%"
+			set author url of the embed to "https://reddit.com/r/%{_meme::subreddit}%/"
+			set title of the embed to "%{_meme::title}%"
+			set title url of the embed to "%{_meme::url}%"
+			set image of embed to "%{_meme::url}%"
+			set timestamp of embed to now
+			set footer of embed to "👍%{_meme::ups}% total upvotes"
+			set {_red} to random integer between 1 to 255
+			set {_green} to random integer between 1 to 255
+			set {_blue} to random integer between 1 to 255
+			set embed color of the embed to skript color from rgb {_red}, {_green}, {_blue}
+		reply with last embed
+		delete {sr}
+
+function random(1: num, 2: num) :: num:
+	return random number between {_1} and {_2}
+
+function randomInt(1: int, 2: int) :: num:
+	return random integer between {_1} and {_2}
+
+discord command minecraft:
+	prefixes: %Kirumi discord prefix of event-guild%
+	category: games
+	description: Get a meme from a given Subreddit
+	usage: %Kirumi discord prefix of event-guild%minecraft
+	trigger:
+		reply with "**Setting up Minecraft on Discord Game Emulator...**" and store it in {_msg}
+		wait "%random(3, 5)% seconds" parsed as timespan
+		set {_biomes::*} to "desert", "forest", "plains" and "tundra"
+		set {_biome} to random element out of {_biomes::*}
+		edit {_msg} to show "**Eroding... (0%%)**"
+		loop 8 times:
+			switch {_biome}:
+				case "plains":
+					chance of 35%:
+						add ":blossom:", ":sunflower:", ":pig2:", ":cow2:" or ":racehorse:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					add "<:grass_block_side:915267367783784538>" to {_surface::*}
+				case "forest":
+					chance of 35%:
+						add ":deciduous_tree:", ":wood:", ":fallen_leaf:" or ":evergreen_tree:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					chance of 15%:
+						add "<a:water:915265154688618496>" to {_surface::*}
+					else:
+						add "<:grass_block_side:915267367783784538>" to {_surface::*}
+				case "desert":
+					chance of 35%:
+						add ":cactus:", ":scorpion:" or ":palm_tree:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					add "<:sand:915267368144490526>" to {_surface::*}
+				case "tundra":
+					chance of 35%:
+						add ":christmas_tree:" or ":polar_bear:" to {_deco::*}
+					else:
+						add " " to {_deco::*}
+					chance of 25%:
+						add "<a:water:915265154688618496>" to {_surface::*}
+					else:
+						add "<:grass_block_snow:915267367783792741>" to {_surface::*}
+			wait "%random(1, 5)% ticks" parsed as timespan
+		edit {_msg} to show "**Soiling... (%randomInt(6, 16)%%%)**" or "**Raising... (%randomInt(6, 16)%%%)**"
+		loop 8 times:
+			add "<:dirt:915267367762804827>" to {_dirt.1::*}
+			wait "%random(1, 3)% ticks" parsed as timespan
+		edit {_msg} to show "**Assembling... (%randomInt(17, 35)%%%)**", "**Planting... (%randomInt(17, 35)%%%)**" or "**Raising... (%randomInt(17, 35)%%%)**"
+		loop 8 times:
+			chance of 40%:
+				add "<:dirt:915267367762804827>" to {_dirt.2::*}
+			else:
+				add "||<:stone:915267368148693033>||" to {_dirt.2::*}
+			wait "%random(1, 4)% tick" parsed as timespan
+		edit {_msg} to show "**Growing... (%randomInt(36, 54)%%%)**", "**Assembling... (%randomInt(36, 54)%%%)**" or "**Carving... (%randomInt(36, 54)%%%)**"
+		set {_y} to 0
+		loop 3 times:
+			add 1 to {_y}
+			loop 8 times:
+				switch "%{_y}%":
+					case "1":
+						chance of 10%:
+							add "||<:coal_ore:915267367850881085>||" to {_mine::%{_y}%::*}
+						else:
+							add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "2":
+						chance of 15%:
+							add "||<:coal_ore:915267367850881085>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:iron_ore:915267368010272818>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "3":
+						chance of 15%:
+							add "||<:iron_ore:915267368010272818>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:gold_ore:915267367800565810>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "4":
+						chance of 15%:
+							add "||<:gold_ore:915267367800565810>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:copper_ore:915267367817347142>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+					case "5":
+						chance of 15%:
+							add "||<:copper_ore:915267367817347142>||" to {_mine::%{_y}%::*}
+						else:
+							chance of 10%:
+								add "||<:diamond_ore:915267367439859783>||" to {_mine::%{_y}%::*}
+							else:
+								add "||<:stone:915267368148693033>||" to {_mine::%{_y}%::*}
+			wait "%random(1, 4)% ticks" parsed as timespan
+		edit {_msg} to show "**Planting... (%randomInt(54, 78)%%%)**" or "**Lighting... (%randomInt(54, 78)%%%)**"
+		loop 8 times:
+			add "||<:bedrock:915267368115134524>||" to {_bedrock::*}
+			wait "%random(1, 2)% ticks" parsed as timespan
+		edit {_msg} to show "**Spawning... (%randomInt(79, 97)%%%)**"
+		set {_deco} to join {_deco::*} with ""
+		set {_surface} to join {_surface::*} with ""
+		set {_dirt.1} to join {_dirt.1::*} with ""
+		set {_dirt.2} to join {_dirt.2::*} with ""
+		set {_bedrock} to join {_bedrock::*} with ""
+		loop 5 times:
+			set {_mine.%loop-number%} to join {_mine::%loop-number%::*} with ""
+			wait "%random(1, 1.5)% ticks" parsed as timespan
+		edit {_msg} to show "%{_deco}%%nl%%{_surface}%%nl%%{_dirt.1}%%nl%%{_dirt.2}%%nl%%{_mine.1}%%nl%%{_mine.2}%%nl%%{_mine.3}%%nl%%{_bedrock}%"

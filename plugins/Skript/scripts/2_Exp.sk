@@ -1,0 +1,188 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+function PrintList(node: string, layer: string="    ", list: string="", currentlayer: string="") :: strings:
+    add "%{_currentlayer}%[%{_node}%]" to {_returnarr::*}
+    loop indices of {%{_list}%%{_node}%::*}:
+        add "%{_currentlayer}%%{_layer}%%loop-value%:%{%{_list}%%{_node}%::%loop-value%}%" to {_returnarr::*} if {%{_list}%%{_node}%::%loop-value%} is set
+        if {%{_list}%%{_node}%::%loop-value%::*} is set:
+            loop PrintList(loop-value, {_layer}, "%{_list}%%{_node}%::", "%{_currentlayer}%%{_layer}%"):
+                add loop-value-2 to {_returnarr::*}
+    return {_returnarr::*}
+
+#init:
+#	register text font from "plugins/SkImage/fonts/Minecraftia.ttf"
+#	register text font from "plugins/SkImage/fonts/IllagerThin.ttf"
+#	register text font from "plugins/SkImage/fonts/Roboto-Light.ttf"
+
+# Accepted entries: `level`, `current_exp`, `max_exp`
+effect store exp information %string% of %member% in %guild% to %objects%:
+	trigger:
+		delay the effect
+		execute "SELECT %expr-1% FROM levels WHERE guild_id = %discord id of expr-3% AND member_id = %discord id of expr-2%" in {-sql} and store result in {_mysql::*}
+		set raw exprs-3 to {_mysql::%expr-1%::1}
+		continue
+
+effect update exp level of %member% in %guild% to %num% level[,] %num% current[(,| and)] %num% max:
+	trigger:
+		delay the effect
+		execute "UPDATE levels SET level = %expr-1%, current_exp = %expr-2%, max_exp = %expr-3%  WHERE member_id = %discord id of expr1% AND guild_id = %discord id of expr-2%" in {-sql}
+		continue
+
+effect setup exp for %member% in %guild%:
+	trigger:
+		delay the effect
+		execute "INSERT INTO levels (member_id, guild_id, current_exp, max_exp, level) VALUES (%discord id of expr-1%, %discord id of expr-2%, 0, 200, 0)" in {-sql}
+		continue
+
+on message receive seen by "Kirumi":
+
+#discord command rank [<member=%event-member%>]:
+#	prefixes: %{db_SI::%discord id of event-guild%::prefix}%
+#	aliases: exp, level
+#	description: Returns your level
+#	category: leveling
+#	usage: %{db_SI::%discord id of event-guild%::prefix}%rank [<member>]
+#	trigger:
+#		if arg-1 is a discord bot:
+#			reply to event-message with ":x: **Bots can't gather EXP, neither can they have their own cards...**" with event-bot
+#		else:
+#			set {_card} to genCard(arg-1)
+#			make embed:
+#				set author of embed to "%discord name of arg-1%'s Experience:"
+#				set author icon of embed to discord user avatar of arg-1
+#				set embed color of embed to lime
+#				set image of embed to "attachment://image.png"
+#				set footer of embed to "Asked by %discord name of event-user%##%tag of event-user%"
+#				set timestamp of embed to now
+#			upload {_card} with content last embed to event-textchannel
+#
+#
+#discord command leaderboard [<int=1>]:
+#	prefixes: %{db_SI::%discord id of event-guild%::prefix}%
+#	aliases: levels, leveltop
+#	description: Returns level leaderboard of a server
+#	category: leveling
+#	usage: %{db_SI::%discord id of event-guild%::prefix}%leaderboard [<page>]
+#	trigger:
+#		set {_arg} to arg
+#		set {_pages.max} to ({_arg}*10)
+#		set {_pages.min} to ({_pages.max}-9)
+#		set {_guild} to event-guild
+#
+#		create section stored in {_loop}:
+#			set {_members::*} to all members of {_guild} where [exp level of input != 0]
+#			loop {_members::*}:
+#				set {level::%mention tag of loop-value%} to exp level of loop-member
+#		run section {_loop} async and wait
+#
+#		add "Your level is %{level::%mention tag of event-member%}%%nl%%nl%" to {_text::*}
+#
+#		set {_top::*} to sorted {level::*} from highest to lowest with format "**@index:** @value LVL"
+#		loop {_top::*}:
+#			add 1 to {_loop.count}
+#			if AND(check [{_loop.count} >= {_pages.min}], check [{_loop.count} <= {_pages.max}]) = true:
+#				set {_text::*} to {_text::*} and "%{_loop.count}%) %loop-value%"
+#			else if {_loop.count} > {_pages.max}:
+#				exit loop
+#		make embed:
+#			set title of embed to "Level top of %event-guild%"
+#			set description of embed to join {_text::*} with nl
+#			set author of the embed to "Project: SMP"
+#			set thumbnail of embed to "https://cdn.discordapp.com/emojis/872526935819964477.gif?v=1"
+#			set embed color of the embed to gold
+#			set footer of embed to "Requested by %discord name of event-member%##%tag of event-member%"
+#			set footer icon of embed to discord user avatar of event-member
+#			set timestamp of embed to now
+#		reply to event-message with last embed with event-bot
+#		clear {level::*}
+#
+#on message receive:
+#	if event-member is a discord bot:
+#		stop
+#	chance of {db_SI.%discord id of event-guild%::expconfig::chance}%:
+#
+#		set {_mu} to 1
+#		loop {db_SI.%discord id of event-guild%::expconfig::multiplier::*}:
+#			event-member has role role with id loop-index
+#			if {_mu} = 1:
+#				set {_mu} to {EXPCONFIG::MULTIPLIER::%loop-index%}
+#			else:
+#				set {_mu} to ({EXPCONFIG::MULTIPLIER::%loop-index%} * {_mu})
+#			exit loop
+#		set {_xp} to random integer between {db_SI.%discord id of event-guild%::expconfig::min} and {db_SI.%discord id of event-guild%::expconfig::max}
+#		set {_xp} to ({_xp} * {_mu})
+#
+#		set {_current} to xp of event-member
+#		set {_max} to max xp of event-member
+#		if ({_current} + {_xp}) is bigger or equal to {_max}:
+#			set {_reste} to ({_current} + {_xp}) - {_max}
+#
+#			set xp level of event-member to (xp level of event-member) + 1
+#			set {_newmax} to {_max} * 1.5
+#			set max xp amount of event-member to {_newmax}
+#			set xp of event-member to {_reste}
+#			set {_role} to {EXPCONFIG::REWARD::%xp level of event-member%}
+#			if {_role} is set:
+#				add role with id "%{_role}%" to roles of event-member
+#			make embed:
+#				set author of embed to "%discord name of event-user% has reached next level!"
+#				set author icon of embed to discord user avatar of event-user
+#				set embed color of embed to green
+#				set image of embed to "attachment://image.png"
+#				set footer of embed to "Well Played %discord name of event-user%!"
+#				set timestamp of embed to now
+#			set {_card} to genLevelUp(event-member)
+#			upload {_card} with content last embed to event-textchannel
+#			upload {_card} with last embed to channel with id "727033287826210871"
+#			set {_role} to {EXPCONFIG::REWARD::%xp level of event-member%}
+#		else:
+#			add {_xp} to exp of event-member
+#
+#function genLevelUp(m: member) :: image:
+#
+#	set {_avatar} to resized (rounded image (image from url "%discord user avatar of {_m}%?size=1024")) to 300, 300 with algo 4
+#	set {_lvl} to image from url "https://zupimages.net/up/21/23/rf4n.png"
+#
+#	set {_img} to new image with size 1500, 373
+#	draw rect at 0, 0 with size 1500, 373 with color from rgb 35, 39, 42 on {_img}
+#	draw image {_lvl} on {_img} at 313, 0
+#	draw image {_avatar} on {_img} at 75, 35
+#
+#	return {_img}
+#
+#function genCard(m: member) :: image:
+
+#	set {_current} to xp of {_m}
+#	set {_max} to max xp of {_m}
+#	set {_level} to xp level of {_m}
+#
+#	set {_fname} to new font style with name "Roboto Light" and with size 24
+#	set {_flvl} to new font style with name "Roboto Light" and with size 20
+#
+#	set {_color} to main color of (image from url discord user avatar of {_m})
+#	set {_name} to "%discord name of {_m}%##%tag of {_m}%"
+#	set {_avatar} to resized (rounded image (image from url discord user avatar of {_m})) to 110, 110 with algo 4
+#
+#	set {_img} to new image with size 720, 180
+#	set {_sx} to ({_current} / {_max}) * 560
+#
+#	# > Decoration
+#	draw rect at 0, 0 with size 720, 180 with color from rgb 35, 39, 42 on {_img}
+#	draw {_avatar} on {_img} at 15, 15
+#	draw rounded rect at 140, 75 with size 320, 5 with {_color} with arc size 3, 3 on {_img}
+#
+#	# > Text
+#	draw {_name} with anti-aliases with font style {_fname} at 140, 60 with color from rgb 255, 255, 255 on {_img}
+#	draw "Level: %{_level}%" with anti-aliases with font style {_flvl} at 145, 110 with color from rgb 255, 255, 255 on {_img}
+#	draw "XP: %{_current}% / %{_max}%" with anti-aliases with font style {_flvl} at 280, 110 with color from rgb 255, 255, 255 on {_img}
+#
+#	# > EXP Bar
+#	draw rounded rect with anti-aliases at 15, 135 with size 560, 30 with color from rgb 255, 255, 255 with arc size 12, 12 on {_img}
+#	draw rounded rect with anti-aliases at 15, 135 with size {_sx}, 30 with {_color} with arc size 12, 12 on {_img}
+#	draw rect with anti-aliases at 850, -400 with size 500, 500 with {_color} with rotation 54 degree on {_img}
+#
+#	if {_m} is a booster:
+#		set {_lvl} to image from url "https://i0.wp.com/i.thexyznetwork.xyz/badges/nitroboost.png"
+#		set {_lvl} to resized {_lvl} to size 64, 64
+#		draw image {_lvl} on {_img} at 460, 43
+#	return {_img}

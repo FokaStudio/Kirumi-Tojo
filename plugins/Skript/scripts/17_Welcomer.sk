@@ -1,0 +1,144 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+init:
+	create section stored in {_init}:
+		clear {help::welcomer::*}
+		clear {help::placeholders::*}
+		set {help::welcomer::1} to "**Welcomer is a :new: module of mine that allows for setting up Welcome and Leave messages**%nl%"
+		set {help::welcomer::2} to "*How does this work?*"
+		set {help::welcomer::3} to "> By doing `{PREFIX}welcomer` I can show you this help menu"
+		set {help::welcomer::4} to "> `{PREFIX}welcomer (join|leave)` allows you to see the current message, either Welcome or Leave one"
+		set {help::welcomer::5} to "> Finally, `{PREFIX}welcomer (join|leave) <text>` with `<text>` being your desired message sets the message to the second command argument"
+		set {help::welcomer::6} to "%nl%**Not sure how to setup the Lobby *(Welcome)* channel? `{PREFIX}setup` is here for you!**"
+		
+		set {help::placeholders::1} to "**Placeholders get replaced in the message with proper values**%nl%"
+		set {help::placeholders::2} to "Each message type has the same placeholders used:"
+		set {help::placeholders::3} to "> `{USER}` - name of the newly joined user"
+		set {help::placeholders::4} to "> `{USER.ID}` - ID of the new user"
+		set {help::placeholders::5} to "> `{USER.MENTION}` - mention tag of new user *(pings them)*"
+		set {help::placeholders::6} to "> `{USER.TAG}` - tag/discriminator of the new user *(four digits after ""##"" in the name)*"
+		set {help::placeholders::7} to "> `{USER.FULL}` - both name and discriminator of the user *(outputs e.g ""ExampleUser##1234"")*"
+		set {help::placeholders::8} to "> `{GUILD}` - name of this server"
+		set {help::placeholders::9} to "> `{GUILD.MEMBERS}` - new number of memvers after the user has joined"
+		set {help::placeholders::10} to "%nl%With `Join Messages` having *1 additional placeholder*, being:"
+		set {help::placeholders::11} to "> `{INVITE}` - replaced with the invite used to invite that user"
+		set {help::placeholders::12} to "%nl%And `Leave Messages` having *1 additional placeholder*, being:"
+		set {help::placeholders::13} to "> `{USER.NICKNAME}` - replaced with the nickname of the user"
+	run section {_init} async
+
+on member join guild:
+	if welcome channel of event-guild != kirumi-default:
+		set {_channel} to value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+		set {_welcome} to value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" 
+		replace all "{USER}" with "%event-user%" in {_welcome}
+		replace all "{USER.ID}" with discord id of event-user in {_welcome}
+		replace all "{USER.MENTION}" with mention tag of event-user in {_welcome}
+		replace all "{USER.TAG}" with tag of event-user in {_welcome}
+		replace all "{USER.FULL}" with "%discord name of event-user%##%tag of event-user%" in {_welcome}
+		replace all "{GUILD}" with "%event-guild%" in {_welcome}
+		replace all "{GUILD.MEMBERS}" with "%size of members of event-guild%" in {_welcome}
+		replace all "{INVITE}" with "%event-invite%" in {_welcome}
+		send "%{_welcome}%" in channel with id "%{_channel}%" with event-bot
+
+on member leave guild:
+	if welcome channel of event-guild != kirumi-default:
+		set {_channel} to value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+		set {_leave} to value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" 
+		replace all "{USER}" with discord name of event-user in {_leave}
+		replace all "{USER.NICKNAME}" with "%event-user%" in {_leave}
+		replace all "{USER.ID}" with discord id of event-user in {_leave}
+		replace all "{USER.MENTION}" with mention tag of event-user in {_leave}
+		replace all "{USER.TAG}" with tag of event-user in {_leave}
+		replace all "{USER.FULL}" with "%discord name of event-user%##%tag of event-user%" in {_leave}
+		replace all "{GUILD}" with "%event-guild%" in {_leave}
+		replace all "{GUILD.MEMBERS}" with "%size of members of event-guild%" in {_welcome}
+		send "%{_leave}%" in channel with id "%{_channel}%" with event-bot
+
+discord command welcomer [<text>] [<text>]:
+	prefixes: %Kirumi discord prefix of event-guild%
+	description: Manage the messages in my Welcomer Module
+	category: general
+	permissions: manage server
+	usage: %Kirumi discord prefix of event-guild%welcomer <type> <text>%nl% `<type>` field accepts either ""join"" or ""leave""
+	trigger:
+		set {_help.1} to join {help::welcomer::*} with nl
+		set {_help.2} to join {help::placeholders::*} with nl
+		replace all "{PREFIX}" in {_help.1} with "%Kirumi discord prefix of event-guild%"
+		replace all "{PREFIX}" in {_help.2} with "%Kirumi discord prefix of event-guild%"
+		if arg-1 is not set:
+			make embed:
+				set title of embed to "Welcomer Help"
+				set author of the embed to "Kirumi Tojo"
+				set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+				set embed color of the embed to red
+				set description of the embed to "%{_help.1}%"
+				add field named "<:tag:906504708305342484> Placeholders" with value "%{_help.2}%" to fields of embed
+			reply to event-message with last embed with event-bot
+			stop
+		if arg-2 is not set:
+			if arg-1 = "join":
+				set {_m} to value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+			else if arg-1 = "leave":
+				set {_m} to value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+			else:
+				make embed:
+					set title of embed to "Welcomer Help"
+					set author of the embed to "Kirumi Tojo"
+					set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+					set embed color of the embed to red
+					set description of the embed to "%{_help.1}%"
+					add field named "<:tag:906504708305342484> Placeholders" with value "%{_help.2}%" to fields of embed
+				reply to event-message with last embed with event-bot
+				stop
+		else:
+			set {_m} to arg-2
+		set {_sm} to self member of bot named "Kirumi" in event-guild
+		replace all "{USER}" in {_m} with "%{_sm}%"
+		replace all "{USER.MENTION}" in {_m} with mention tag of {_sm}
+		replace all "{USER.TAG}" in {_m} with "1388"
+		replace all "{USER.FULL}" in {_m} with "Kirumi Tojo##1388"
+		replace all "{USER.ID}" in {_m} with discord id of {_sm}
+		replace all "{GUILD}" in {_m} with "%event-guild%"
+		replace all "{GUILD.MEMBERS}" in {_m} with "%size of members of event-guild%"
+
+		switch arg-1:
+			case "join":
+				if arg-2 is not set:
+					make embed:
+						set title of embed to "Preview"
+						set author of the embed to "Kirumi Tojo"
+						set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+						set embed color of the embed to white
+						replace all "{INVITE}" in {_m} with random 8 char string from `a-Z0-9`
+						set description of the embed to "**An example join message currently looks like this:**%nl%%nl%%nl%%{_m}%%nl%%nl%"
+					reply to event-message with last embed with event-bot
+					stop
+				make embed:
+					set title of embed to "Preview"
+					set author of the embed to "Kirumi Tojo"
+					set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+					set embed color of the embed to white
+					replace all "{INVITE}" in {_m} with random 8 char string from `a-Z0-9`
+					set description of the embed to "**An example join message will look like this:**%nl%%nl%%nl%%{_m}%%nl%%nl%Run the command one more time to further tweak this%nl%```Not sure what to do?%nl%Do '%Kirumi discord prefix of event-guild%welcomer help'!```"
+					set value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to arg-2
+				reply to event-message with last embed with event-bot
+			case "leave":
+				if arg-2 is not set:
+					make embed:
+						set title of embed to "Preview"
+						set author of the embed to "Kirumi Tojo"
+						set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+						set embed color of the embed to white
+						replace all "{USER.NICKNAME}" in {_m} with "%{_sm}%"
+						set description of the embed to "**An example leave message currently looks like this:**%nl%%nl%%nl%%{_m}%%nl%%nl%"
+					reply to event-message with last embed with event-bot
+					stop
+				make embed:
+					set title of embed to "Preview"
+					set author of the embed to "Kirumi Tojo"
+					set author icon of embed to avatar of self member of bot named "Kirumi" in event-guild
+					set embed color of the embed to white
+					replace all "{USER.NICKNAME}" in {_m} with "%{_sm}%"
+					set description of the embed to "**An example leave message will look like this:**%nl%%nl%%nl%%{_m}%%nl%%nl%Run the command one more time to further tweak this%nl%```Not sure what to do?%nl%Do '%Kirumi discord prefix of event-guild%welcomer help'!```"
+					set value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to arg-2
+				reply to event-message with last embed with event-bot

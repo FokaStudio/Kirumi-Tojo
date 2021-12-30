@@ -1,0 +1,153 @@
+# Copyright © Filip 'FokaStudio' Raczkowski, 2020 - 2021
+
+# Utility, returns a color for the embed based on input
+function kirumiColor(s: string) :: color:
+	switch {_s}:
+		case "error" or "err":
+			return dark red
+		case "warn" or "warning":
+			return yellow
+		case "info":
+			return light blue
+		case "moderation" or "mod":
+			return light red
+		case "other" or "?":
+			return lime
+
+# Effect to log smth to #audit-logs
+effect [Kirumi] log %string% as %string% in [guild] %guild%:
+	trigger:
+		if {db_SI.audit_channel::%discord id of expr-3%} is set:
+			make embed:
+				set author of the embed to "Kirumi Tojo | %expr-2 in proper case%"
+				set author icon of the embed to avatar of bot named "Kirumi"
+				set title of the embed to "%expr-2%"
+				set description of the embed to "%expr-1%"
+				set timestamp of the embed to now
+				set footer of the embed to "Kirumi Tojo"
+				set color of the embed to kirumiColor(expr-2)
+			send last embed to text channel with id {db_SI.audit_channel::%discord id of expr-3%}
+
+# Login, startup message and some setup
+init:
+	clear {internal.status::*}
+	set {internal.status::1::text} to "cleaning the config files"
+	set {internal.status::1::type} to "playing"
+	set {internal.status::2::text} to "%{guild_count}% servers I serve at"
+	set {internal.status::2::type} to "watching"
+	set {internal.status::3::text} to "to your commands"
+	set {internal.status::3::type} to "listening"
+#! Had some issues
+#	if "Kirumi" is loaded on discord:
+#		shutdown the bot (bot named "Kirumi")
+#	wait 1 seconds
+	make new discord bot:
+		enable guild bans intent
+		enable guild emojis intent
+		enable guild webhooks intent
+		enable guild invites intent
+		enable guild voice states intent
+		enable guild message reactions intent
+		enable guild message typing intent
+		enable direct messages intent
+		enable guild messages intent
+#!!		Waiting 700 more years to get
+#!!		Those intents...
+#		enable guild members intent
+#		enable guild presences intent
+		login to "OTA2NTUzNjg4NTMxODA0MjIw.YYaT6g.FKI-2qcqAZgf8WAtJkaQiznkOQg" with name "Kirumi"
+	wait 1 seconds
+	set discord online status of bot named "Kirumi" to do not disturb
+	while "Kirumi" is loaded on discord:
+		set {guild_count} to size of guilds of bot named "Kirumi"
+		set {_id} to random integer between 1 and 3
+		set {_text} to {internal.status::%{_id}%::text}
+		set {_type} to {internal.status::%{_id}%::type}
+		switch {_type}:
+			case "playing":
+				set presence of bot named "Kirumi" to playing "%{_text}%"
+			case "listening":
+				set presence of bot named "Kirumi" to listening "%{_text}%"
+			case "watching":
+				set presence of bot named "Kirumi" to watching "%{_text}%"
+		wait 15 minutes
+
+on text channel delete:
+	if discord id of event-textchannel = auditchannel of event-guild:
+		delete auditchannel of event-guild
+
+# Basically making Kirumi say a desired line of yours
+discord command announce [<text>]:
+	permissions: manage server
+	prefixes: %Kirumi discord prefix of event-guild%, %secondary prefix of event-guild%
+	usage: %Kirumi discord prefix of event-guild%announce <message>
+	category: moderation
+	description: <STAFF> Make me help you with making announcements (accepts formatting codes that are accesible only to bots, such as [link](URL))
+	trigger:
+		destroy discord entity event-message
+		if arg-1 is set:
+			reply with arg-1
+		else:
+			reply with "**This is an example message!**%nl%```applescript%nl%1 | ""Codeblock!""%nl%```%nl%`*Italic*` `__Underlined__` `~~Strikethrough~~` `**Bold**`%nl%> Quote!%nl%> Insert `>` at the begging of a line to create a quote!%nl%> Make it as long as you like!%nl%>%nl%>%nl%> *(empty quote lines)*%nl%Quote ends here!%nl%%nl%>>> Append `>>>` in front of the line to make the quote go all the way down to the end of the message!" and store it in {_msg}
+			wait 15 seconds
+			destroy discord entity {_msg}
+
+discord command prefix [<text>]:
+	permissions: manage server
+	prefixes: %Kirumi discord prefix of event-guild%, %secondary prefix of event-guild%
+	description: <STAFF> Set my prefix for commands
+	category: Utility
+	usage: %Kirumi discord prefix of event-guild%prefix <new prefix>%nl%*(this command will always respond to default prefix)*
+	trigger:
+		if arg-1 is not set:
+			stop
+		set {_arg} to arg-1
+		if {_arg} = Kirumi discord prefix of event-guild:
+			set {_mess::1} to ":x: **My new prefix can't be my old prefix!**"
+		else:
+			replace all """" in {_arg} with ""
+			set Kirumi discord prefix of event-guild to {_arg}
+			set {_mess::1} to ":white_check_mark: **Succesfully changed my prefix!**"
+		chance of 50%:
+			set {_mess::2} to "<:reply:906517020651171860> **TIP:** If you want to set my prefix to something containing a space bar *(e.g. `kirumi `)*"
+
+on bot join:
+	if event-bot = Kirumi:
+		set value "prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "!!"
+		set value "version" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to Kirumi current version
+		set value "suggestion_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "audit_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "language" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "en_us"
+		set value "tag_prefix" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**"
+		set value "welcome_channel" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "000000000000000000"
+		set value "welcome_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has joined!** :wave:"
+		set value "goodbye_message" from "plugins/DiscordData/server_data/%discord id of event-guild%.json" to "**{USER} has left**"
+
+on bot leave:
+	if event-bot = Kirumi:
+		delete file path "plugins/DiscordData/server_data/%discord id of event-guild%.json"
+
+on message receive:
+	if author of event-message is not a bot:
+		set {_m::*} to mentioned members of event-message
+		set {_sm} to self member of Kirumi in event-guild
+		if {_m::*} contains {_sm}:
+			set {_content} to content of event-message
+			set {_mention} to join "%mention tag of {_sm}%" and " "
+			set {_mention2} to mention tag of {_sm}
+			if OR(check [length of {_content} = length of {_mention}], check [length of {_content} = length of {_mention2}]):
+				reply to event-message with "Hello %mention tag of event-member%, have you called me?%nl%**My prefix here is %Kirumi discord prefix of event-guild%**%nl%Do __*%Kirumi discord prefix of event-guild%help*__ to get my list of commands%nl%If you would need *any support* with the Bot, join the Discord server of my Master - FokaStudio%nl%https://discord.gg/J6guYAySN8" with event-bot
+
+#discord command ping:
+#	prefixes: prefix of event-guild
+#	trigger:
+#		make embed:
+#			set title of embed to "BOT NAME's Information:"
+#			add "`•` Uptime: %uptime of bot named ""Kirumi""%" to {_l::*}
+#			add "`•` Ping: %ping of bot named ""Kirumi""%ms" to {_l::*}
+#			set description of embed to join {_l::*} with nl
+#			set color of embed to color from rgb 255, 32, 65
+#			set footer of embed to "Asked by %discord name of event-member%"
+#			set timestamp of embed to now
+#		reply with last embed
+#
