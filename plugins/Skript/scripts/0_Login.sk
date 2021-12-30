@@ -55,7 +55,7 @@ init:
 #!!		Those intents...
 #		enable guild members intent
 #		enable guild presences intent
-		login to "OTA2NTUzNjg4NTMxODA0MjIw.YYaT6g.FKI-2qcqAZgf8WAtJkaQiznkOQg" with name "Kirumi"
+		login to "INSERT TOKEN HERE" with name "Kirumi"
 	wait 1 seconds
 	set discord online status of bot named "Kirumi" to do not disturb
 	while "Kirumi" is loaded on discord:
